@@ -32,7 +32,7 @@
       <a class="nav-item" id="upload" href="javascript:" onclick="goUpload()">上传</a>
       <a class="nav-item" id="search" href="javascript:" onclick="goSearch()">查询</a>
     </div>
-    <form method="post" name="form1">
+    <form method="post" id="form">
       <label>
         <input type="text" placeholder="需要下载的文件链接" name="inputFile" id="inputFile" autocomplete="off">
         <input type="file" name="uploadFile" id="uploadFile" hidden="hidden">
@@ -40,7 +40,7 @@
         <input type="text" placeholder="备注" name="remarks" id="remarks" autocomplete="off">
         <input type="text" name="mode" id="mode" hidden="hidden" value="parse">
       </label>
-      <input type="button" id="gogogo" value="解析">
+      <input type="button" id="gogogo" value="解析" onclick="doTrident()">
     </form>
   </div>
 
