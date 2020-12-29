@@ -1,17 +1,6 @@
-input {
-  margin: 20px 5%;
-  width: 80%;
-  outline-style: none;
-  padding: 0;
-  border: 1px solid #337ab7;
-  border-radius: 25px;
-  line-height: 35px;
-}
-
 .container {
   text-align: center;
-  display: block;
-  margin: 0 20%;
+  padding: 0 20%;
 }
 
 .title {
@@ -21,29 +10,20 @@ input {
   margin-top: 100px;
 }
 
-.linkContainer {
-  display: block;
-  margin-top: 100px;
-}
-
 .nav {
   margin-left: 10%;
   margin-right: 10%;
-  margin-bottom: 50px;
-  /*border-bottom-width: 1px;*/
-  /*border-bottom-style: solid;*/
-  /*border-bottom-color: #337ab7;*/
+  margin-bottom: 25px;
   display: flex;
 }
 
 .nav-item {
   position: center;
-  width: 100%;
   padding: 10px;
   font-size: 18px;
   text-decoration: none;
   color: #337ab7;
-  display: block;
+  flex: 1;
 }
 
 .nav-now {
@@ -51,6 +31,16 @@ input {
   border-bottom-style: solid;
   border-bottom-color: #fcc22a;
 }
+
+input {
+   margin: 20px 5%;
+   width: 80%;
+   outline-style: none;
+   padding: 0;
+   border: 1px solid #337ab7;
+   border-radius: 25px;
+   line-height: 35px;
+ }
 
 input[name="inputFile"] {
   background: url("../img/cloud-download.svg") 10px 11px no-repeat;
