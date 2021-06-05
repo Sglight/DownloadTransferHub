@@ -24,38 +24,85 @@
 </head>
 
 <body>
-
   <div class="container">
-    <a class="title">海洋空氣的文件下载中转站</a>
-    <div class="nav">
-      <a class="nav-item nav-now" id="parse" href="javascript:" onclick="goParse()">解析</a>
-      <a class="nav-item" id="upload" href="javascript:" onclick="goUpload()">上传</a>
-      <a class="nav-item" id="search" href="javascript:" onclick="goSearch()">查询</a>
+    <div class="container-main">
+      <a class="title" href="javascript:" onclick="switchUsage()">海洋空氣的文件下载中转站</a>
+      <div class="nav">
+        <a class="nav-item nav-now" id="parse" href="javascript:" onclick="goParse()">解析</a>
+        <a class="nav-item" id="upload" href="javascript:" onclick="goUpload()">上传</a>
+        <a class="nav-item" id="search" href="javascript:" onclick="goSearch()">查询</a>
+      </div>
+      <form method="post" id="form">
+        <label>
+          <input type="text" placeholder="需要下载的文件链接" name="inputFile" id="inputFile" autocomplete="off">
+          <input type="file" name="uploadFile" id="uploadFile" hidden="hidden">
+          <input type="text" placeholder="密令" name="secretKey" id="secretKey" maxlength="12">
+          <input type="text" placeholder="备注" name="remarks" id="remarks" autocomplete="off">
+          <input type="text" name="mode" id="mode" hidden="hidden" value="parse">
+        </label>
+        <input type="button" id="gogogo" value="解析" onclick="doTrident()">
+      </form>
+      <br>
+      <table>
+        <tr class="search-result">
+          <th>文件</th>
+          <th>MD5</th>
+          <th>密令</th>
+          <th>备注</th>
+          <th>操作</th>
+        </tr>
+        <!-- JS 插入数据位置 -->
+        <tr class="search-result">
+          <td>文件</td>
+          <td>MD5</td>
+          <td>密令</td>
+          <td>备注</td>
+          <td>
+            <form>
+              <input type="button" class="operate-button delete-button" value="" title="删除">
+              <input type="button" class="operate-button change-key-button" value="" title="更改密令">
+              <input type="button" class="operate-button change-remarks-button" value="" title="更改备注">
+            </form>
+          </td>
+        </tr>
+        <tr class="search-result">
+          <td>文件</td>
+          <td>MD5</td>
+          <td>密令</td>
+          <td>备注</td>
+          <td>
+            <form>
+              <input type="button" class="operate-button delete-button" value="" title="删除">
+              <input type="button" class="operate-button change-key-button" value="" title="更改密令">
+              <input type="button" class="operate-button change-remarks-button" value="" title="更改备注">
+            </form>
+          </td>
+        </tr>
+        <tr class="search-result">
+          <td>文件</td>
+          <td>MD5</td>
+          <td>密令</td>
+          <td>备注</td>
+          <td>
+            <form>
+              <input type="button" class="operate-button delete-button" value="" title="删除">
+              <input type="button" class="operate-button change-key-button" value="" title="更改密令">
+              <input type="button" class="operate-button change-remarks-button" value="" title="更改备注">
+            </form>
+          </td>
+        </tr>
+      </table>
     </div>
-    <form method="post" id="form">
-      <label>
-        <input type="text" placeholder="需要下载的文件链接" name="inputFile" id="inputFile" autocomplete="off">
-        <input type="file" name="uploadFile" id="uploadFile" hidden="hidden">
-        <input type="text" placeholder="密令" name="secretKey" id="secretKey" maxlength="12">
-        <input type="text" placeholder="备注" name="remarks" id="remarks" autocomplete="off">
-        <input type="text" name="mode" id="mode" hidden="hidden" value="parse">
-      </label>
-      <input type="button" id="gogogo" value="解析" onclick="doTrident()">
-    </form>
+    <div class="container-right" id="usage-container" hidden="hidden">
+      <div class="usage-slide">
+        <p>制是同价变之不系大航韩孔朋，杨也投九洋盲兮身死胆，设对衣报感兴月价即之与大书是，亲光但量时一国的，不我中十可，倒光就，怎尺人赏、送珍份互才在小仃疾非了，卞洞下，笔词是太，互但一慨，攻皇冒有传人将，韩的送自作才心愚什洞救他，落是能害事罪艳何快的釜生如郭能，时的了血叩，车了烦治死所唯骨上娟锐将快贼不为这老，的高得了极，事就生下案叹重死掉啦的我秦火谓不，人拆快，将郭禀九，揽如明感君当落召下杀兼命导许己我，诗场一韩则脱自六归览易仆落年破，上越者言路了，房人他就投春，也弟不的榜越能关者么更，高尤有人不洪这设胸回为啦大，通后未，王才子极君视恩非太订降沉因自个花畴，有当是书惶，官不他，学是才时定此一教，的感使老览帝就收杨，陛老关事而说郭绛承何，娘什王答案畴九认斯人说设无都的的己洪下，娇俭哉第承方妄李大是投都范，谓的真读第派小活孔，的自孔到快秦一车的得身，徒害到此善一到尹情在仄肯的楚要惊让什，到匹一灰尤人时更，之他上份一，子大者三、郭不中定请，为德绪，把全得作人太，要许降，是办兴小说备应认，韩孔不，变哉面书仆要的花水拿统明逃太第，秦车到承是松导里徒李自孔了，上弟助自办迷的人和乐想火卧即，人担是兮拾吞。</p>
+      </div>
+    </div>
   </div>
-
-
 
   <script src="js/vendor/modernizr-3.11.2.min.js"></script>
   <script src="js/plugins.js"></script>
   <script src="js/main.js"></script>
-
-<!--   Google Analytics: change UA-XXXXX-Y to be your site's ID. -->
-<!--  <script>-->
-<!--    window.ga = function () { ga.q.push(arguments) }; ga.q = []; ga.l = +new Date;-->
-<!--    ga('create', 'UA-XXXXX-Y', 'auto'); ga('set', 'anonymizeIp', true); ga('set', 'transport', 'beacon'); ga('send', 'pageview')-->
-<!--  </script>-->
-<!--  <script src="https://www.google-analytics.com/analytics.js" async></script>-->
 </body>
 
 </html>

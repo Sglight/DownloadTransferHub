@@ -1,6 +1,24 @@
+html, body {
+  height: 100%;
+	overflow: auto;
+}
+
 .container {
+  display: -webkit-flex; /* Safari */
+  display: flex;
+  height: 100%;
+	overflow: auto;
+}
+
+.container-main {
   text-align: center;
   padding: 0 20%;
+  flex: 3;
+}
+
+.container-right {
+  flex: 1;
+  background-color: rgb(196, 196, 196);
 }
 
 .title {
@@ -8,12 +26,19 @@
   display: block;
   margin-bottom: 50px;
   margin-top: 100px;
+  text-decoration: none;
+  color: black;
+}
+
+.title:hover {
+  cursor: help;
 }
 
 .nav {
   margin-left: 10%;
   margin-right: 10%;
   margin-bottom: 25px;
+  display: -webkit-flex; /* Safari */
   display: flex;
 }
 
@@ -40,7 +65,11 @@ input {
    border: 1px solid #337ab7;
    border-radius: 25px;
    line-height: 35px;
- }
+}
+
+input[type="button"]:hover {
+  cursor: pointer;
+}
 
 input[name="inputFile"] {
   background: url("../img/cloud-download.svg") 10px 11px no-repeat;
@@ -64,12 +93,48 @@ input[name="remarks"] {
   text-indent: 35px;
 }
 
-input[name="remarks"] {
-  background: url("../img/chat-left-dots.svg") 10px 11px no-repeat;
-  text-indent: 35px;
-}
-
 #gogogo {
   color: white;
   background-color: #337ab7;
+}
+
+table {
+  margin: auto;
+  width: 80%;
+  border-spacing: 0;
+}
+
+th {
+  line-height: 45px;
+  border-top: 2px solid #337ab7;
+  border-bottom: 1px solid #337ab7;
+}
+
+td {
+  line-height: 30px;
+  border-top: 1px solid #337ab7;
+}
+
+.operate-button {
+  margin: 0;
+  line-height: 30px;
+  width: 32px;
+  border-style: none;
+}
+
+.delete-button {
+  background: url("../img/trash-fill.svg") 7px 8px no-repeat;
+}
+
+.change-key-button {
+  background: url("../img/key-fill.svg") 7px 8px no-repeat;
+}
+
+.change-remarks-button {
+  background: url("../img/chat-left-dots-fill.svg") 7px 8px no-repeat;
+}
+
+.usage-slide {
+  position: fixed;
+  width: 250px;
 }

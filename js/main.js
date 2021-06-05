@@ -1,3 +1,12 @@
+function switchUsage() {
+  let displayStatus = document.getElementById("usage-container").getAttribute("hidden");
+  if (displayStatus == "hidden") {
+    hideElement("usage-container", false);
+  } else {
+    hideElement("usage-container", true);
+  }
+}
+
 function doParse() {
   alert("doParse()");
 }
@@ -58,8 +67,8 @@ function doTrident() {
 
 function setNowNavItem(item) {
   // 清空 nav-now 状态
-  let test = document.getElementsByClassName("nav-item");
-  for (let elem of test) {
+  let items = document.getElementsByClassName("nav-item");
+  for (let elem of items) {
     elem.className = "nav-item";
   }
   // 添加 nav-now
