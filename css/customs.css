@@ -1,6 +1,8 @@
 html, body {
   height: 100%;
 	overflow: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .container {
@@ -14,11 +16,26 @@ html, body {
   text-align: center;
   padding: 0 20%;
   flex: 3;
+  display: flex;
+  flex-direction: column;
 }
 
 .container-right {
   flex: 1;
-  background-color: rgb(196, 196, 196);
+  background-color: whitesmoke;
+}
+
+.container-footer {
+  flex: auto;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  padding: 25px 15px;
+}
+
+.footer-text {
+  text-decoration: none;
+  color: #999;
 }
 
 .title {
