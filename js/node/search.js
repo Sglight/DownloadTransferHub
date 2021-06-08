@@ -1,5 +1,9 @@
-const pg = require('pg');
-require("dotenv").config();
+const pg = require('pg')
+require("dotenv").config()
+
+const express = require('express');
+const { request, response } = require('express');
+const exp = express()
 
 const config = {
     host: process.env.hksrvip,
@@ -12,32 +16,34 @@ const config = {
     ssl: false
 };
 
-const client = new pg.Client(config);
-
-client.connect(err => {
-    if (err) throw err;
-    else {
-        queryDatabase('tmp');
-    }
-});
-
-function queryDatabase(secretKey) {
+exp.get('/search', (request, response) => {
+    response.setHeader('Access-Control-Allow-Origin', '*')
     let query = `
         SELECT \"FileName\", \"Hash\", \"SecretKey\", \"remarks\", 
-        \"FID\" FROM \"UserFiles\" WHERE \"SecretKey\" = '${secretKey}'
-    `;
+        \"FID\" FROM \"UserFiles\" WHERE \"SecretKey\" = '${request.query.secretkey}'
+    `
 
-    client.query(query)
-        .then(res => {
-            const rows = res.rows;
+    const client = new pg.Client(config)
 
-            rows.map(row => {
-                console.log(`Read: ${JSON.stringify(row)}`);
-            });
+    client.connect(err => {
+        if (err) throw err
+        else console.log('postgreSQL connected.')
+    });
 
-            process.exit();
-        })
-        .catch(err => {
-            console.log(err);
-        });
-}
+    setTimeout(() => {
+        client.query(query)
+            .then(res => {
+                response.send(res.rows)
+                client.end(err => {
+                    if (err) throw err
+                    else console.log('postgreSQL disconnected.')
+                })
+            })
+            .catch(err => {
+                console.log(err)
+            })
+    })
+})
+
+exp.listen(8001, () => {
+})
