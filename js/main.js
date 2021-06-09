@@ -11,13 +11,10 @@ function doSearch() {
     let secretKey = document.getElementById('secretKey').value
     
     secretKey ? 1 : secretKey = 'tmp'
-    data = JSON.stringify({
-        "secretkey": secretKey
-    })
 
-    let requestUrl = 'https://soar.l4d2lk.cn/search'
+    let requestUrl = 'http://soar.l4d2lk.cn/search?secretkey=' + secretKey
     xhr.open('POST', requestUrl)
-    xhr.send(data)
+    xhr.send()
 
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
@@ -33,7 +30,7 @@ function doSearch() {
                 }
 
                 for (item of JSON.parse(xhr.response)) {
-                    console.log(item)
+                    // console.log(item)
                     let tableRow = table.insertRow(rowLength)
 
                     let fileName = tableRow.insertCell(0)

@@ -3,11 +3,7 @@ require("dotenv").config()
 
 const express = require('express')
 const { request, response } = require('express')
-const bodyParser = require('body-parser')
 const exp = express()
-
-exp.use(bodyParser.json())
-exp.use(bodyParser.urlencoded({extended: false}))
 
 exp.get('/search', (request, response) => {
     response.setHeader('Access-Control-Allow-Origin', 'https://soar.l4d2lk.cn')
@@ -27,8 +23,6 @@ exp.post('/search', (request, response) => {
         port: 5432,
         ssl: false
     }
-
-    console.log(request.body)
 
     let query = `
         SELECT \"FileName\", \"Hash\", \"SecretKey\", \"remarks\", 
