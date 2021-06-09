@@ -12,7 +12,7 @@ function doSearch() {
     
     secretKey ? 1 : secretKey = 'tmp'
 
-    let requestUrl = 'http://soar.l4d2lk.cn/search?secretkey=' + secretKey
+    let requestUrl = 'https://soar.l4d2lk.cn/search?secretkey=' + secretKey
     xhr.open('POST', requestUrl)
     xhr.send()
 
