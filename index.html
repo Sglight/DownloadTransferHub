@@ -26,21 +26,21 @@
 <body>
   <div class="container">
     <div class="container-main">
-      <a class="title" href="javascript:" onclick="switchUsage()">海洋空氣的文件下载中转站</a>
+      <a class="title" href="javascript:void(0)" onclick="switchUsage()">海洋空氣的文件下载中转站</a>
       <div class="nav">
-        <a class="nav-item nav-now" id="parse" href="javascript:" onclick="goParse()">解析</a>
-        <a class="nav-item" id="upload" href="javascript:" onclick="goUpload()">上传</a>
-        <a class="nav-item" id="search" href="javascript:" onclick="goSearch()">查询</a>
+        <a class="nav-item nav-now" id="parse" href="javascript:void(0)" onclick="goParse()">解析</a>
+        <a class="nav-item" id="upload" href="javascript:void(0)" onclick="goUpload()">上传</a>
+        <a class="nav-item" id="search" href="javascript:void(0)" onclick="goSearch()">查询</a>
       </div>
-      <form id="form" name="form">
+      <form id="form">
         <label>
-          <input type="text" placeholder="需要下载的文件链接" name="inputFile" id="inputFile" autocomplete="off">
-          <input type="file" name="uploadFile" id="uploadFile" hidden="hidden">
-          <input type="text" placeholder="密令" name="secretKey" id="secretKey" maxlength="12">
-          <input type="text" placeholder="备注" name="remarks" id="remarks" autocomplete="off">
-          <input type="text" name="mode" id="mode" hidden="hidden" value="parse">
+          <input type="text" placeholder="需要下载的文件链接" id="inputFile" autocomplete="off">
+          <input type="file" id="uploadFile" hidden="hidden">
+          <input type="text" placeholder="密令" id="secretKey" maxlength="12">
+          <input type="text" placeholder="备注" id="remarks" autocomplete="off">
+          <input type="text" id="mode" hidden="hidden" value="parse">
         </label>
-        <input type="button" id="gogogo" value="解析" onclick="doTrident()">
+        <input type="button" id="trident" value="解析" onclick="doTrident()">
       </form>
       <br>
       <table id="result-table" hidden="hidden">
@@ -50,6 +50,7 @@
           <th>密令</th>
           <th>备注</th>
           <th>操作</th>
+          <th hidden="hidden">FID</tr>
         </tr>
         <!-- JS 插入数据位置 -->
       </table>
@@ -61,11 +62,7 @@
     </div>
     <div class="container-right" id="usage-container" hidden="hidden">
       <div class="usage-slide">
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusamus sunt reprehenderit dicta vero id eum ut placeat beatae enim. Aliquam autem nihil recusandae veniam ipsum. Perspiciatis, id quae! Deleniti, similique.
-        Eius possimus, odio, temporibus suscipit quae veniam fugit ducimus excepturi fuga nostrum amet adipisci ab officia maxime consectetur aut necessitatibus modi, porro laborum quidem laudantium deleniti! Porro facere deserunt cumque?
-        Natus architecto exercitationem aliquid repellendus eius at. Amet vel eveniet doloremque aperiam. Libero possimus eaque aperiam delectus, placeat unde ex assumenda dolores nihil dicta soluta, corrupti odit at facere tempore?
-        Vero consectetur quisquam, doloremque sint, quos non, sit aliquid perspiciatis ratione saepe nesciunt aperiam sapiente quasi. Saepe beatae modi alias doloribus harum. Temporibus sit blanditiis vel dolorum minus, ullam odio?
-        Quidem voluptates dolorum consequatur eligendi, vel provident! Ad esse neque ea delectus temporibus laboriosam officiis sapiente obcaecati rerum exercitationem optio dolorum, saepe laudantium at ipsa quaerat! Rerum voluptatum totam eos.
+        <p></p>  
       </div>
     </div>
   </div>

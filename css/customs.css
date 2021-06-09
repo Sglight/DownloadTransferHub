@@ -21,8 +21,13 @@ html, body {
 }
 
 .container-right {
-    flex: 1;
+    min-width: 250px;
     background-color: whitesmoke;
+}
+
+.usage-slide {
+    position: fixed;
+    width: 250px;
 }
 
 .container-footer {
@@ -75,42 +80,42 @@ html, body {
 }
 
 input {
-     margin: 20px 5%;
-     width: 80%;
-     outline-style: none;
-     padding: 0;
-     border: 1px solid #337ab7;
-     border-radius: 25px;
-     line-height: 35px;
+    margin: 20px 5%;
+    width: 80%;
+    outline-style: none;
+    padding: 0;
+    border: 1px solid #337ab7;
+    border-radius: 25px;
+    line-height: 35px;
 }
 
 input[type="button"]:hover {
     cursor: pointer;
 }
 
-input[name="inputFile"] {
+#inputFile {
     background: url("../img/cloud-download.svg") 10px 11px no-repeat;
     text-indent: 35px;
 }
 
-input[name="uploadFile"] {
+#uploadFile {
     background: url("../img/cloud-upload.svg") 10px 11px no-repeat;
     text-indent: 35px;
 }
 
-input[name="secretKey"] {
+#secretKey {
     background: url("../img/key.svg") 10px 11px no-repeat;
     width: 35%;
     text-indent: 35px;
 }
 
-input[name="remarks"] {
+#remarks {
     background: url("../img/chat-left-dots.svg") 10px 11px no-repeat;
     width: 35%;
     text-indent: 35px;
 }
 
-#gogogo {
+#trident {
     color: white;
     background-color: #337ab7;
 }
@@ -130,12 +135,17 @@ th {
 
 td {
     line-height: 30px;
+    min-width: 40px;
     border-top: 1px solid #337ab7;
 }
 
 td a {
     text-decoration: none;
     color: #337ab7;
+}
+
+.operate-form {
+    min-width: 104px;
 }
 
 .operate-button {
@@ -155,9 +165,4 @@ td a {
 
 .change-remarks-button {
     background: url("../img/chat-left-dots-fill.svg") 7px 8px no-repeat;
-}
-
-.usage-slide {
-    position: fixed;
-    width: 250px;
 }

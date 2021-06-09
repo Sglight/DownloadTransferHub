@@ -9,13 +9,15 @@ function doUpload() {
 function doSearch() {
     const xhr = new XMLHttpRequest()
     let secretKey = document.getElementById('secretKey').value
-    if (secretKey == '') {
-        secretKey = 'tmp'
-    }
+    
+    secretKey ? 1 : secretKey = 'tmp'
+    data = JSON.stringify({
+        "secretkey": secretKey
+    })
 
-    let requestUrl = 'http://localhost:8001/search?secretkey=' + secretKey
-    xhr.open('GET', requestUrl)
-    xhr.send()
+    let requestUrl = 'https://soar.l4d2lk.cn/search'
+    xhr.open('POST', requestUrl)
+    xhr.send(data)
 
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
@@ -41,11 +43,12 @@ function doSearch() {
                     let operate = tableRow.insertCell(4)
 
                     fileName.innerHTML = `<a href="UserFiles/${item.SecretKey}/${item.FileName}">${item.FileName}</a>`
-                    hash.innerHTML = `<a href="javascript:">${item.Hash}</a>`
-                    secretKey.innerHTML = `<a href="javascript:">${item.SecretKey}</a>`
-                    remarks.innerHTML = `<a href="javascript:">${item.remarks}</a>`
+                    hash.innerHTML = `<a href="javascript:void(0)" onclick="copyToClip('${item.Hash}')">${item.Hash}</a>`
+                    secretKey.innerHTML = `<a href="javascript:void(0)" onclick="copyToClip('${item.SecretKey}')">${item.SecretKey}</a>`
+                    remarks.innerHTML = `<a href="javascript:void(0)" onclick="copyToClip('${item.remarks}')>${item.remarks}</a>`
                     operate.innerHTML = `
-                    <form>
+                    <form class="operate-form">
+                        <input type="hidden" name="FID" value="${item.FID}">
                         <input type="button" class="operate-button delete-button" value="" title="删除" onclick="doDelete()">
                         <input type="button" class="operate-button change-key-button" value="" title="更改密令" onclick="doChangeKey()">
                         <input type="button" class="operate-button change-remarks-button" value="" title="更改备注" onclick="doChangeRemarks()">
@@ -64,9 +67,9 @@ function goParse() {
     hideElement("uploadFile",true)
     hideElement("remarks", false)
     setElementValue("mode", "parse")
-    setElementValue("gogogo", "解析")
-    document.form.action="/parse"
+    setElementValue("trident", "解析")
     document.getElementById("secretKey").style.width = "35%"
+    hideElement("result-table", true)
 }
 
 function goUpload() {
@@ -75,9 +78,9 @@ function goUpload() {
     hideElement("uploadFile", false)
     hideElement("remarks", false)
     setElementValue("mode", "upload")
-    setElementValue("gogogo", "上传")
-    document.form.action="/upload"
+    setElementValue("trident", "上传")
     document.getElementById("secretKey").style.width = "35%"
+    hideElement("result-table", true)
 }
 
 function goSearch() {
@@ -86,9 +89,13 @@ function goSearch() {
     hideElement("uploadFile",true)
     hideElement("remarks",true)
     setElementValue("mode", "search")
-    setElementValue("gogogo", "查询")
-    document.form.action=""
+    setElementValue("trident", "查询")
     document.getElementById("secretKey").style.width = "80%"
+    if (document.getElementById('result-table').rows.length > 1) {
+        hideElement("result-table", false)
+    } else {
+        hideElement("result-table", true)
+    }
 }
 
 function doTrident() {
@@ -142,12 +149,8 @@ function setElementValue(id, value) {
 }
 
 function doDelete() {
-    // 获取 request 的参数
-    deleteData('FID 1', '文件名 1', '路径 1')
-}
+    // 发送 post
 
-function deleteData(FID, fileName, path) {
-    alert(`delete: ${FID}, ${fileName}, ${path}`)
 }
 
 function doChangeKey() {
@@ -161,15 +164,6 @@ function changeKey(FID) {
     `)
 }
 
-function doChangeRemarks() {
-    // 获取 request 的参数
-    changeRemarks('FID 1')
-}
-
-function changeRemarks(FID) {
-    alert(`更改备注: ${FID}`)
-}
-
 function switchUsage() {
     let displayStatus = document.getElementById("usage-container").getAttribute("hidden")
     if (displayStatus == "hidden") {
@@ -177,4 +171,18 @@ function switchUsage() {
     } else {
         hideElement("usage-container", true)
     }
+}
+
+function copyToClip(content, message) {
+    var aux = document.createElement("input"); 
+    aux.setAttribute("value", content); 
+    document.body.appendChild(aux); 
+    aux.select();
+    document.execCommand("copy"); 
+    document.body.removeChild(aux);
+    // if (message == null) {
+    //     alert("复制成功");
+    // } else{
+    //     alert(message);
+    // }
 }
