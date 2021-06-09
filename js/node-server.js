@@ -28,7 +28,7 @@ exp.post('/search', (request, response) => {
         ssl: false
     }
 
-    console.log(req.body)
+    console.log(request.body)
 
     let query = `
         SELECT \"FileName\", \"Hash\", \"SecretKey\", \"remarks\", 
