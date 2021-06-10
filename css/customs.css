@@ -166,3 +166,26 @@ td a {
 .change-remarks-button {
     background: url("../img/chat-left-dots-fill.svg") 7px 8px no-repeat;
 }
+
+#loading-circle {
+    border: 4px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 4px solid #337ab7;
+    width: 30px;
+    height: 30px;
+    margin: auto;
+    flex-shrink: 0;
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin 2s linear infinite;
+}
+  
+/* Safari */
+@-webkit-keyframes spin {
+    0% { -webkit-transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
