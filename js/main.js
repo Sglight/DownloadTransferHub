@@ -20,7 +20,7 @@ function doParse() {
 
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
-                hideElement('loading-circle', true)
+            hideElement('loading-circle', true)
             if (xhr.status >= 200 && xhr.status < 300) {
                 hideElement('parse-result-table', false)
                 let table = document.getElementById('parse-result-table')
@@ -141,7 +141,7 @@ function setElementValue(id, value) {
 function createResultTable(table, responseJSON) {
     let rowLength = table.rows.length
     let tableRow = table.insertRow(rowLength)
-    tableRow.setAttribute('FID', responseJSON.FID)
+    tableRow.setAttribute('id', `fid-${responseJSON.FID}`)
 
     let fileName = tableRow.insertCell(0)
     let hash = tableRow.insertCell(1)
@@ -187,7 +187,8 @@ function doDelete(FID, fileName, secretKey) {
 
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
-            doSearch()
+            let row = document.getElementById(`fid-${FID}`)
+            row.parentElement.removeChild(row)
         }
     }
 }

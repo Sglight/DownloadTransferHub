@@ -54,11 +54,8 @@ exp.post('/parse', async (request, response) => {
     // 更新数据库
     let SQLQuery = `
         INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks") 
-        VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}')
-    `
-    let queryFID = `
-        SELECT "FID" FROM "UserFiles" WHERE 
-        "FileName" = '${alterFileName}' AND "SecretKey" = '${secretKey}'
+        VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}') 
+        RETURNING "FID"
     `
     let FID
     const client = new pg.Client(pgConfig)
@@ -66,17 +63,12 @@ exp.post('/parse', async (request, response) => {
         if (err) console.log(err)
         // else console.log('postgreSQL connected.')
     })
-
     client.query(SQLQuery)
-    .then(() => {
-        client.query(queryFID)
-        .then(res => {
-            console.log(res.rows)
-            FID = res.rows[0].FID
-            client.end(err => {
-                if (err) console.log(err)
-                // else console.log('postgreSQL disconnected.')
-            })
+    .then(res => {
+        FID = res.rows[0].FID
+        client.end(err => {
+            if (err) console.log(err)
+            // else console.log('postgreSQL disconnected.')
         })
     })
     .then(() => {
@@ -98,8 +90,8 @@ exp.post('/search', (request, response) => {
     response.setHeader('Access-Control-Allow-Origin', domain)
 
     let SQLQuery = `
-        SELECT "FileName", "Hash", "SecretKey", "remarks", 
-        "FID" FROM "UserFiles" WHERE "SecretKey" = '${request.query.secretkey}'
+        SELECT "FileName", "Hash", "SecretKey", "remarks", "FID" 
+        FROM "UserFiles" WHERE "SecretKey" = '${request.query.secretkey}'
     `
 
     const client = new pg.Client(pgConfig)
