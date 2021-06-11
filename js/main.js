@@ -199,7 +199,6 @@ function createResultTableIterate(table, responseJSON) {
 }
 
 function doDelete(FID, fileName, secretKey) {
-    // 发送 post
     let xhr = new XMLHttpRequest()
     let requestUrl = `${DOMAIN}/delete?FID=${FID}&filename=${fileName}&secretkey=${secretKey}`
     xhr.open('POST', requestUrl)

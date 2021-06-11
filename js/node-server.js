@@ -201,7 +201,7 @@ exp.post('/delete', (request, response) => {
         let fileFullPath = `${WORKPATH}/UserFiles/${request.query.secretkey}/${request.query.filename}`
         if (fs.existsSync(fileFullPath))
             fs.rmSync(fileFullPath)
-        response.send()
+        response.send('Deleted.')
     })
     .catch(err => {
         console.log(err)
