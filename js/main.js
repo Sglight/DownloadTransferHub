@@ -1,5 +1,5 @@
 // "use strict";
-const domain = 'https://soar.l4d2lk.cn'
+const DOMAIN = 'https://soar.l4d2lk.cn'
 // const DOMAIN = 'http://localhost:8001'
 
 function doParse() {
