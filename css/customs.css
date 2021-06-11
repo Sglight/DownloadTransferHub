@@ -77,23 +77,23 @@ input[type="button"]:hover {
 }
 
 #inputFile {
-    background: url("../img/cloud-download.svg") 10px 11px no-repeat;
+    background: url("../src/cloud-download.svg") 10px 11px no-repeat;
     text-indent: 35px;
 }
 
 #uploadFile {
-    background: url("../img/cloud-upload.svg") 10px 11px no-repeat;
+    background: url("../src/cloud-upload.svg") 10px 11px no-repeat;
     text-indent: 35px;
 }
 
 #secretKey {
-    background: url("../img/key.svg") 10px 11px no-repeat;
+    background: url("../src/key.svg") 10px 11px no-repeat;
     width: 35%;
     text-indent: 35px;
 }
 
 #remarks {
-    background: url("../img/chat-left-dots.svg") 10px 11px no-repeat;
+    background: url("../src/chat-left-dots.svg") 10px 11px no-repeat;
     width: 35%;
     text-indent: 35px;
 }
@@ -105,7 +105,7 @@ input[type="button"]:hover {
 
 #trident:disabled {
     background-color: gray;
-    background-image: url("../img/NewTux.svg");
+    background-image: url("../src/NewTux.svg");
     background-size: 31px 37px;
     background-repeat: no-repeat;
     background-position-y: 1px;
@@ -165,15 +165,15 @@ td a {
 }
 
 .delete-button {
-    background: url("../img/trash-fill.svg") 7px 8px no-repeat;
+    background: url("../src/trash-fill.svg") 7px 8px no-repeat;
 }
 
 .change-key-button {
-    background: url("../img/key-fill.svg") 7px 8px no-repeat;
+    background: url("../src/key-fill.svg") 7px 8px no-repeat;
 }
 
 .change-remarks-button {
-    background: url("../img/chat-left-dots-fill.svg") 7px 8px no-repeat;
+    background: url("../src/chat-left-dots-fill.svg") 7px 8px no-repeat;
 }
 
 @keyframes alert-glow {
