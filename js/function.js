@@ -18,11 +18,11 @@ function doParse() {
     xhr.open('POST', requestUrl)
     xhr.send()
 
-    hideElement('loading-circle', false)
+    disableElement('trident', true)
 
     xhr.onreadystatechange = () => {
         if (xhr.readyState === 4) {
-            hideElement('loading-circle', true)
+            disableElement('trident', false)
             if (xhr.status >= 200 && xhr.status < 300) {
                 hideElement('parse-result-table', false)
                 let table = document.getElementById('parse-result-table')
@@ -53,10 +53,10 @@ function doUpload() {
     xhr.open('POST', requestUrl)
     xhr.send(form)
 
-    hideElement('loading-circle', false)
+    disableElement('trident', true)
 
     xhr.onreadystatechange = () => {
-        hideElement('loading-circle', true)
+        disableElement('trident', false)
         if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
             hideElement('parse-result-table', false)
             let table = document.getElementById('parse-result-table')
@@ -73,8 +73,10 @@ function doSearch() {
     let requestUrl = `${DOMAIN}/search?secretkey=${secretKey}`
     xhr.open('POST', requestUrl)
     xhr.send()
+    disableElement('trident', true)
 
     xhr.onreadystatechange = () => {
+        disableElement('trident', false)
         if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
             hideElement('search-result-table', false)
             let table = document.getElementById('search-result-table')

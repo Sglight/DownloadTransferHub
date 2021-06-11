@@ -23,7 +23,9 @@ function goUpload() {
     setElementValue('trident', '上传')
     document.getElementById('secretKey').style.width = "35%"
     hideElement('search-result-table', true)
-    hideElement('parse-result-table', true)
+
+    document.getElementById('parse-result-table').rows.length > 1 ? 
+        hideElement('parse-result-table', false) : hideElement('parse-result-table', true)
 }
 
 function goSearch() {
@@ -49,13 +51,17 @@ function setNowNavItem(item) {
     document.getElementById(item).className = 'nav-item nav-now'
 }
 
-function hideElement(id, hidden) {
+function hideElement(id, boolean) {
     let elem = document.getElementById(id)
-    hidden ? elem.setAttribute('hidden', 'hidden') : elem.removeAttribute('hidden')
+    boolean ? elem.setAttribute('hidden', 'hidden') : elem.removeAttribute('hidden')
 }
 
 function setElementValue(id, value) {
     document.getElementById(id).setAttribute('value', value)
+}
+
+function disableElement(id, boolean) {
+    document.getElementById(id).disabled = boolean
 }
 
 function createResultTable(table, responseJSON) {
