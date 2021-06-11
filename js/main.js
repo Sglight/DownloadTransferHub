@@ -9,7 +9,8 @@ function doParse() {
     let remarks = document.getElementById('remarks').value
 
     if (!inputFile) {
-        alert("文件链接为空！")
+        document.getElementById('inputFile').style.animation = "alert-glow 250ms ease-out 3"
+        setTimeout(() => {document.getElementById('inputFile').style.animation = ""}, 750)
         return
     }
     const xhr = new XMLHttpRequest()
@@ -32,6 +33,13 @@ function doParse() {
 }
 
 function doUpload() {
+    if (!document.getElementById('uploadFile').value) {
+        document.getElementById('uploadFile').style.animation = "alert-glow 250ms ease-out 3"
+        setTimeout(() => {document.getElementById('uploadFile').style.animation = ""}, 750)
+        return
+    }
+
+    document.getElementById('uploadFile').style = ""
     let secretKey = document.getElementById('secretKey').value
     secretKey ? 1 : secretKey = 'tmp'
     let remarks = document.getElementById('remarks').value

@@ -200,6 +200,17 @@ td a {
     100% { transform: rotate(360deg); }
 }
 
+@keyframes alert-glow {
+    0% {
+        border-color: rgb(163, 0, 0);
+        box-shadow: 0 0 5px rgba(255,0,0,.2), inset 0 0 5px rgba(255,0,0,.1), 0 1px 0 rgb(163, 0, 0);
+    }
+    100% {
+        border-color: rgb(255, 0, 0);
+        box-shadow: 0 0 10px rgba(255,0,0,.6), inset 0 0 10px rgba(255,0,0,.4), 0 1px 0 rgb(255, 0, 0);
+    }
+}
+
 @media screen and (max-width: 1400px) {
     .container-main {
         max-width: 80%;
