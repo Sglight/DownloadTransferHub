@@ -1,5 +1,6 @@
 // "use strict";
 const domain = 'https://soar.l4d2lk.cn'
+// const domain = 'http://localhost:8001'
 
 function doParse() {
     let secretKey = document.getElementById('secretKey').value
@@ -194,10 +195,14 @@ function doDelete(FID, fileName, secretKey) {
 }
 
 function doChangeKey(FID) {
-    // 获取 request 的参数
-    alert(`更改密令: ${FID}\n
-        可以 '更改' 或者 '添加'
-    `)
+    // 参数：FID, oldkey, newkey, mode
+    let newKey = prompt("输入新的密令\n可以 '更改' 或者 '添加'")
+    let select = confirm(`可以 '更改' 或者 '添加'\n点击 '确定' 更改为 '${newKey}'\n点击 '取消' 增加密令 '${newKey}'`)
+    if (select === true) {
+        // 更改
+    } else if (select === false) {
+        // 增加
+    }
 }
 
 function switchUsage() {

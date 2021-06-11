@@ -12,6 +12,7 @@ const { request, response } = require('express')
 const exp = express()
 
 const domain = 'https://soar.l4d2lk.cn'
+// const domain = '*'
 const workPath = path.resolve(__dirname, '..')
 
 const pgConfig = {
@@ -142,6 +143,11 @@ exp.post('/delete', (request, response) => {
     .catch(err => {
         console.log(err)
     })
+})
+
+exp.post('/changekey', (request, response) => {
+    // 参数：FID, oldkey, newkey, mode
+    
 })
 
 exp.listen(8001, () => {
