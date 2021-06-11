@@ -11,7 +11,9 @@ const express = require('express')
 const { request, response } = require('express')
 const fileUpload = require('express-fileupload')
 const exp = express()
-exp.use(fileUpload())
+exp.use(fileUpload({
+    limits: { fileSize: 200 * 1024 * 1024 }
+  }))
 
 const DOMAIN = 'https://soar.l4d2lk.cn'
 // const DOMAIN = '*'

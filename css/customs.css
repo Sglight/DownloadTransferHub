@@ -21,19 +21,6 @@ html, body {
     flex-direction: column;
 }
 
-.container-right {
-    min-width: 250px;
-    background-color: whitesmoke;
-    border-radius: 25px 0 0 25px;
-    padding: 25px;
-    box-shadow: -1px 1px 5px gray;
-}
-
-.usage-slide {
-    position: fixed;
-    width: 250px;
-}
-
 .container-footer {
     flex: auto;
     display: flex;
@@ -56,10 +43,6 @@ html, body {
     color: black;
 }
 
-.title:hover {
-    cursor: help;
-}
-
 .nav {
     margin-left: 10%;
     margin-right: 10%;
@@ -78,9 +61,6 @@ html, body {
 }
 
 .nav-now {
-    /* border-bottom-width: 3px;
-    border-bottom-style: solid;
-    border-bottom-color: #fcc22a; */
     box-shadow: 0px 4px 2px -2px orange,inset 0 -5px 3px -6px orange;
 }
 
