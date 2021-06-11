@@ -1,6 +1,6 @@
 "use strict";
-const DOMAIN = 'https://soar.l4d2lk.cn'
-// const DOMAIN = 'http://localhost:8001'
+// const DOMAIN = 'https://soar.l4d2lk.cn'
+const DOMAIN = 'http://localhost:8001'
 
 function doParse() {
     let secretKey = document.getElementById('secretKey').value
