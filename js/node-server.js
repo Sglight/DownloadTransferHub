@@ -128,18 +128,20 @@ exp.post('/upload', (request, response) => {
 
         // 检查是否已存在相同文件
         let i = 1
-        let alterFileName = fileName
         let fileNameWithoutSuffix = fileName.substring(0, fileName.lastIndexOf('.'))
         let fileSuffix = fileName.substring(fileName.lastIndexOf('.'))
+        let alterFileName = fileName
         while (fs.existsSync(fileFullPath)) {
             alterFileName = `${fileNameWithoutSuffix}.${i}${fileSuffix}`
             fileFullPath = `${fileFloder}/${alterFileName}`
             i++
         }
+        fileName = alterFileName
         file.mv(fileFullPath)
-
+    })
+    .then(() => {
         let responseData = JSON.stringify({
-            "FileName": alterFileName,
+            "FileName": fileName,
             "Hash": hash,
             "SecretKey": secretKey,
             "remarks": remarks,
