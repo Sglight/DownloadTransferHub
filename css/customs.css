@@ -14,7 +14,8 @@ html, body {
 
 .container-main {
     text-align: center;
-    padding: 0 20%;
+    margin: 0 auto;
+    max-width: 60%;
     flex: 3;
     display: flex;
     flex-direction: column;
@@ -158,6 +159,7 @@ td a {
     line-height: 30px;
     width: 32px;
     border-style: none;
+    box-shadow: none;
 }
 
 .delete-button {
@@ -193,4 +195,19 @@ td a {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+@media screen and (max-width: 1400px) {
+    .container-main {
+        max-width: 80%;
+    }
+}
+
+@media screen and (max-width: 800px) {
+    .container-main {
+        max-width: max-content;
+    }
+    .title {
+        font-size: 24px;
+    }
 }
