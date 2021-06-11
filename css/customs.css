@@ -143,6 +143,9 @@ td {
     line-height: 30px;
     min-width: 40px;
     border-top: 1px solid #337ab7;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 td a {
