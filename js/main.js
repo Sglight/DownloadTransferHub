@@ -1,6 +1,6 @@
 // "use strict";
 const domain = 'https://soar.l4d2lk.cn'
-// const domain = 'http://localhost:8001'
+// const DOMAIN = 'http://localhost:8001'
 
 function doParse() {
     let secretKey = document.getElementById('secretKey').value
@@ -13,13 +13,13 @@ function doParse() {
         return
     }
     const xhr = new XMLHttpRequest()
-    let requestUrl = `${domain}/parse?inputfile=${inputFile}&secretkey=${secretKey}&remarks=${remarks}`
+    let requestUrl = `${DOMAIN}/parse?inputfile=${inputFile}&secretkey=${secretKey}&remarks=${remarks}`
     xhr.open('POST', requestUrl)
     xhr.send()
 
     hideElement('loading-circle', false)
 
-    xhr.onreadystatechange = function() {
+    xhr.onreadystatechange = () => {
         if (xhr.readyState === 4) {
             hideElement('loading-circle', true)
             if (xhr.status >= 200 && xhr.status < 300) {
@@ -32,7 +32,26 @@ function doParse() {
 }
 
 function doUpload() {
-    alert("doUpload()")
+    let secretKey = document.getElementById('secretKey').value
+    secretKey ? 1 : secretKey = 'tmp'
+    let remarks = document.getElementById('remarks').value
+    let fileObj = document.getElementById('uploadFile').files[0]
+
+    var form = new FormData();
+    form.append("file", fileObj)
+
+    const xhr = new XMLHttpRequest()
+    let requestUrl = `${DOMAIN}/upload?secretkey=${secretKey}&remarks=${remarks}`
+    xhr.open('POST', requestUrl)
+    xhr.send(form)
+
+    xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
+            hideElement('parse-result-table', false)
+            let table = document.getElementById('parse-result-table')
+            createResultTable(table, JSON.parse(xhr.response))
+        }
+    }
 }
 
 function doSearch() {
@@ -40,11 +59,11 @@ function doSearch() {
     secretKey ? 1 : secretKey = 'tmp'
 
     const xhr = new XMLHttpRequest()
-    let requestUrl = `${domain}/search?secretkey=${secretKey}`
+    let requestUrl = `${DOMAIN}/search?secretkey=${secretKey}`
     xhr.open('POST', requestUrl)
     xhr.send()
 
-    xhr.onreadystatechange = function() {
+    xhr.onreadystatechange = () => {
         if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
             hideElement('search-result-table', false)
             let table = document.getElementById('search-result-table')
@@ -182,7 +201,7 @@ function createResultTableIterate(table, responseJSON) {
 function doDelete(FID, fileName, secretKey) {
     // 发送 post
     let xhr = new XMLHttpRequest()
-    let requestUrl = `${domain}/delete?FID=${FID}&filename=${fileName}&secretkey=${secretKey}`
+    let requestUrl = `${DOMAIN}/delete?FID=${FID}&filename=${fileName}&secretkey=${secretKey}`
     xhr.open('POST', requestUrl)
     xhr.send()
 
