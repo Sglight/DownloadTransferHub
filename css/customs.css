@@ -36,6 +36,7 @@ html, body {
 
 .title {
     margin: 50px auto;
+    max-width: 550px;
 }
 
 .nav {
