@@ -5,12 +5,13 @@ require("dotenv").config()
 
 const fs = require('fs')
 const path = require('path')
-const download = require('./download.js')
+const Aria2 = require("aria2")
 
 const express = require('express')
 const { request, response } = require('express')
 const fileUpload = require('express-fileupload')
 const exp = express()
+
 exp.use(fileUpload({
     limits: { fileSize: 200 * 1024 * 1024 }
   }))
@@ -28,6 +29,14 @@ const pgConfig = {
     database: process.env.pghkdb,
     port: 5432,
     ssl: false
+}
+
+const aria2Config = {
+    host: 'localhost',
+    port: 6800,
+    secure: false,
+    secret: '123321',
+    path: '/jsonrpc'
 }
 
 exp.post('/parse', async (request, response) => {
@@ -56,38 +65,55 @@ exp.post('/parse', async (request, response) => {
         fileFullPath = `${fileFloder}/${alterFileName}`
         i++
     }
-    // 更新数据库
-    let SQLQuery = `
-        INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks") 
-        VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}') 
-        RETURNING "FID"
-    `
-    let FID
-    const client = new pg.Client(pgConfig)
-    client.connect(err => {
-        response.setHeader('Access-Control-Allow-Origin', DOMAIN)
-        // else console.log('postgreSQL connected.')
-    })
-    client.query(SQLQuery)
-    .then(res => {
-        FID = res.rows[0].FID
-        client.end(err => {
-            if (err) console.log(err)
-            // else console.log('postgreSQL disconnected.')
-        })
+
+    let aria2 = new Aria2(aria2Config)
+    await aria2.open()
+    .then(() => {
+        aria2.call('addUri', [inputFileLink], {dir: fileFloder})
     })
     .then(() => {
-        let responseData = JSON.stringify({
-            "FileName": alterFileName,
-            "Hash": hash,
-            "SecretKey": secretKey,
-            "remarks": remarks,
-            "FID": FID
+        aria2.on("onDownloadComplete", () => {
+            aria2.close()
+
+            // 更新数据库
+            let SQLQuery = `
+                INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks") 
+                VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}') 
+                RETURNING "FID"
+            `
+            let FID
+            const client = new pg.Client(pgConfig)
+            client.connect(err => {
+                // else console.log('postgreSQL connected.')
+            })
+            client.query(SQLQuery)
+            .then(res => {
+                FID = res.rows[0].FID
+                client.end(err => {
+                    if (err) console.error(err)
+                    // else console.log('postgreSQL disconnected.')
+                })
+            })
+            .then(() => {
+                let responseData = JSON.stringify({
+                    "FileName": alterFileName,
+                    "Hash": hash,
+                    "SecretKey": secretKey,
+                    "remarks": remarks,
+                    "FID": FID
+                })
+                response.send(responseData)
+            })
         })
-        download.downloadFile(inputFileLink, fileFloder, response, responseData)
+        aria2.on("onDownloadError", () => {
+            aria2.close()
+            response.status(500).send('Download Error')
+        })
     })
     .catch((err) => {
-        console.log(err)
+        aria2.close()
+        console.error(err)
+        response.status(400).send()
     })
 })
 
@@ -108,13 +134,13 @@ exp.post('/upload', (request, response) => {
     let FID
     const client = new pg.Client(pgConfig)
     client.connect(err => {
-        if (err) console.log(err)
+        if (err) console.error(err)
     })
     client.query(SQLQuery)
     .then(res => {
         FID = res.rows[0].FID
         client.end(err => {
-            if (err) console.log(err)
+            if (err) console.error(err)
         })
     })
     .then(() => {
@@ -150,7 +176,8 @@ exp.post('/upload', (request, response) => {
         response.send(responseData)
     })
     .catch((err) => {
-        console.log(err)
+        response.status(500).send()
+        console.error(err)
     })
 })
 
@@ -165,20 +192,20 @@ exp.post('/search', (request, response) => {
     const client = new pg.Client(pgConfig)
 
     client.connect(err => {
-        if (err) console.log(err)
+        if (err) console.error(err)
         // else console.log('postgreSQL connected.')
     })
-
     client.query(SQLQuery)
     .then(res => {
         response.send(res.rows)
         client.end(err => {
-            if (err) console.log(err)
+            if (err) console.error(err)
             // else console.log('postgreSQL disconnected.')
         })
     })
     .catch(err => {
-        console.log(err)
+        response.status(500).send()
+        console.error(err)
     })
 })
 
@@ -192,8 +219,7 @@ exp.post('/delete', (request, response) => {
     client.connect(err => {
         if (err) console.log(err)
         // else console.log('postgreSQL connected.')
-    });
-
+    })
     client.query(SQLQuery)
     .then(() => {
         client.end(err => {
@@ -208,6 +234,7 @@ exp.post('/delete', (request, response) => {
         response.send('Deleted.')
     })
     .catch(err => {
+        response.status(500).send()
         console.log(err)
     })
 })
