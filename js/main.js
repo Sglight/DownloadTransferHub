@@ -172,7 +172,7 @@ function createResultTable(table, responseJSON) {
     fileName.innerHTML = `<a href="UserFiles/${responseJSON.SecretKey}/${responseJSON.FileName}">${responseJSON.FileName}</a>`
     hash.innerHTML = `<a href="javascript:void(0)" onclick="copyToClip('${responseJSON.Hash}')">${responseJSON.Hash}</a>`
     secretKey.innerHTML = `<a href="javascript:void(0)" onclick="copyToClip('${responseJSON.SecretKey}')">${responseJSON.SecretKey}</a>`
-    remarks.innerHTML = `<a href="javascript:void(0)" onclick="copyToClip('${responseJSON.remarks}')>${responseJSON.remarks}</a>`
+    remarks.innerHTML = `<a href="javascript:void(0)" onclick="copyToClip('${responseJSON.remarks}')">${responseJSON.remarks}</a>`
     operate.innerHTML = `
     <form class="operate-form">
         <input type="hidden" name="FID" value="${responseJSON.FID}">
