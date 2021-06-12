@@ -67,6 +67,7 @@ html, body {
 
 .nav-now {
     box-shadow: 0px 4px 2px -2px #FF9800,inset 0 -5px 3px -6px #FF9800;
+    transition: box-shadow 0.3s ease-in-out;
 }
 
 input {
@@ -78,27 +79,18 @@ input {
     border-radius: 25px;
     line-height: 35px;
     box-shadow: 0px 4px 2px -2px gray;
-    transition: font-size 0.6s ease-in-out, font-weight 0.6s ease-in-out, transform 0.6s ease-in-out;
+    transition: font-size 0.6s ease-in-out, font-weight 0.6s ease-in-out, transform 0.6s ease-in-out, box-shadow 0.6s ease-in-out;
 }
 
 input[type="text"]:focus {
-    /* animation: scaleAnimation 0.6s;
-    animation-fill-mode: forwards; */
     transform: scale(1.1);
+    box-shadow: 0px 6px 4px -4px gray;
 }
 
 input[type="button"]:hover {
     cursor: pointer;
     font-size: 18px;
     font-weight: bold;
-}
-
-@keyframes scaleAnimation {
-    from {
-        scale: 1;
-    } to {
-        scale: 1.1;
-    }
 }
 
 #inputFile {
