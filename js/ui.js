@@ -20,6 +20,14 @@ function prepareClicks() {
     document.getElementById('tab-upload').onclick = goUpload
     document.getElementById('tab-search').onclick = goSearch
     document.getElementById('trident').onclick = doTrident
+    document.getElementById('form').onkeydown = (event) => {
+        if (event.defaultPrevented) {
+            return // 如果事件已经在进行中，则不做任何事。
+        }
+        if (event.key === 'Enter') {
+            doTrident()
+        }
+    }
 }
 
 function goParse() {
