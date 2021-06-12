@@ -109,8 +109,9 @@ function createResultTable(table, responseJSON) {
     fillRowCell(hashCell, '', responseJSON.Hash)
     fillRowCell(secretKeyCell, '', responseJSON.SecretKey)
     fillRowCell(remarksCell, '',responseJSON.remarks)
-    fillOperateCell(operateCell, 'delete-button', '删除', doDelete, responseJSON.FID)
-    fillOperateCell(operateCell, 'change-key-button', '更改密令', doChangeKey, responseJSON.FID)
+
+    fillOperateCell(operateCell, 'delete-button', '删除', doDelete, [responseJSON.FID, responseJSON.FileName, responseJSON.SecretKey])
+    fillOperateCell(operateCell, 'change-key-button', '更改密令', doChangeKey, [responseJSON.FID, responseJSON.FileName, responseJSON.SecretKey])
     fillOperateCell(operateCell, 'change-remarks-button', '更改备注', doChangeRemarks, responseJSON.FID)
 }
 
@@ -122,11 +123,15 @@ function fillRowCell(cell, href, text) {
     elem.appendChild(txt)
 }
 
-function fillOperateCell(cell, className, title, func, FID) {
+function fillOperateCell(cell, className, title, func, params) {
     let elem = document.createElement('button')
     elem.setAttribute('class', 'operate-button ' + className)
     elem.title = title
-    elem.onclick = () => {func(FID)}
+    if (typeof(params) == 'string') {
+        elem.onclick = () => {func(FID)}
+    } else if (typeof(params) == 'object') {
+        elem.onclick = () => {doDelete(params[0], params[1], params[2])}
+    }
     cell.appendChild(elem)
 }
 

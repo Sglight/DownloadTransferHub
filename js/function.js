@@ -101,7 +101,7 @@ function doDelete(FID, fileName, secretKey) {
     }
 }
 
-function doChangeKey(FID) {
+function doChangeKey(FID, fileName, secretKey) {
     // 参数：FID, oldkey, newkey, mode
     // let newKey = prompt("输入新的密令\n可以 '更改' 或者 '添加'")
     // if (select === true) {
