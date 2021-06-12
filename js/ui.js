@@ -1,7 +1,29 @@
 "use strict";
 
+addLoadEvent(prepareClicks)
+
+function addLoadEvent(func) {
+    let oldonload = window.onload
+    if (typeof window.onload != 'function') {
+        window.onload = func;
+    } else {
+        window.onload = function() {
+            oldonload()
+            func()
+        }
+    }
+}
+
+function prepareClicks() {
+    if (!document.createElement || !document.createTextNode || !document.getElementById) return false
+    document.getElementById('tab-parse').onclick = goParse
+    document.getElementById('tab-upload').onclick = goUpload
+    document.getElementById('tab-search').onclick = goSearch
+    document.getElementById('trident').onclick = doTrident
+}
+
 function goParse() {
-    setNowNavItem('parse')
+    setNowNavItem('tab-parse')
     hideElement('inputFile', false)
     hideElement('uploadFile',true)
     hideElement('remarks', false)
@@ -15,7 +37,7 @@ function goParse() {
 }
 
 function goUpload() {
-    setNowNavItem('upload')
+    setNowNavItem('tab-upload')
     hideElement('inputFile',true)
     hideElement('uploadFile', false)
     hideElement('remarks', false)
@@ -29,7 +51,7 @@ function goUpload() {
 }
 
 function goSearch() {
-    setNowNavItem('search')
+    setNowNavItem('tab-search')
     hideElement('inputFile',true)
     hideElement('uploadFile',true)
     hideElement('remarks',true)
@@ -69,24 +91,35 @@ function createResultTable(table, responseJSON) {
     let tableRow = table.insertRow(rowLength)
     tableRow.setAttribute('id', `fid-${responseJSON.FID}`)
 
-    let fileName = tableRow.insertCell(0)
-    let hash = tableRow.insertCell(1)
-    let secretKey = tableRow.insertCell(2)
-    let remarks = tableRow.insertCell(3)
-    let operate = tableRow.insertCell(4)
+    let fileNameCell = tableRow.insertCell(0)
+    let hashCell = tableRow.insertCell(1)
+    let secretKeyCell = tableRow.insertCell(2)
+    let remarksCell = tableRow.insertCell(3)
+    let operateCell = tableRow.insertCell(4)
 
-    fileName.innerHTML = `<a href="UserFiles/${responseJSON.SecretKey}/${responseJSON.FileName}">${responseJSON.FileName}</a>`
-    hash.innerHTML = `<a href="javascript:copyToClip('${responseJSON.Hash}')">${responseJSON.Hash}</a>`
-    secretKey.innerHTML = `<a href="javascript:copyToClip('${responseJSON.SecretKey}')">${responseJSON.SecretKey}</a>`
-    remarks.innerHTML = `<a href="javascript:copyToClip('${responseJSON.remarks}')">${responseJSON.remarks}</a>`
-    operate.innerHTML = `
-    <form class="operate-form">
-        <input type="hidden" name="FID" value="${responseJSON.FID}">
-        <input type="button" class="operate-button delete-button" value="" title="删除" onclick="doDelete(${responseJSON.FID}, '${responseJSON.FileName}', '${responseJSON.SecretKey}')">
-        <input type="button" class="operate-button change-key-button" value="" title="更改密令" onclick="doChangeKey(${responseJSON.FID})">
-        <input type="button" class="operate-button change-remarks-button" value="" title="更改备注" onclick="doChangeRemarks(${responseJSON.FID})">
-    </form>
-    `
+    fillRowCell(fileNameCell, `UserFiles/${responseJSON.SecretKey}/${responseJSON.FileName}`, responseJSON.FileName)
+    fillRowCell(hashCell, '', responseJSON.Hash)
+    fillRowCell(secretKeyCell, '', responseJSON.SecretKey)
+    fillRowCell(remarksCell, '',responseJSON.remarks)
+    fillOperateCell(operateCell, 'delete-button', '删除', doDelete, responseJSON.FID)
+    fillOperateCell(operateCell, 'change-key-button', '更改密令', doChangeKey, responseJSON.FID)
+    fillOperateCell(operateCell, 'change-remarks-button', '更改备注', doChangeRemarks, responseJSON.FID)
+}
+
+function fillRowCell(cell, href, text) {
+    let elem = document.createElement('a')
+    href ? elem.href = href : elem.onclick = () => {copyToClip(text)}
+    cell.appendChild(elem)
+    let txt = document.createTextNode(text)
+    elem.appendChild(txt)
+}
+
+function fillOperateCell(cell, className, title, func, FID) {
+    let elem = document.createElement('button')
+    elem.setAttribute('class', 'operate-button ' + className)
+    elem.title = title
+    elem.onclick = () => {func(FID)}
+    cell.appendChild(elem)
 }
 
 function createResultTableIterate(table, responseJSON) {
@@ -102,4 +135,14 @@ function createResultTableIterate(table, responseJSON) {
         createResultTable(table, item)
         rowLength++
     }
+}
+
+function copyToClip(content, message) {
+    var aux = document.createElement('input'); 
+    aux.setAttribute('value', content); 
+    document.body.appendChild(aux); 
+    aux.select();
+    document.execCommand('copy'); 
+    document.body.removeChild(aux);
+    message ? true : message = '复制成功'
 }

@@ -110,6 +110,10 @@ function doChangeKey(FID) {
     }
 }
 
+function doChangeRemarks(FID) {
+    alert('还没做')
+}
+
 function doTrident() {
     let mode = document.getElementById('mode').getAttribute('value')
     switch (mode) {
@@ -137,13 +141,3 @@ form.addEventListener('keydown', function (event) {
         doTrident()
     }
 }, true)
-
-function copyToClip(content, message) {
-    var aux = document.createElement('input'); 
-    aux.setAttribute('value', content); 
-    document.body.appendChild(aux); 
-    aux.select();
-    document.execCommand('copy'); 
-    document.body.removeChild(aux);
-    message ? true : message = '复制成功'
-}

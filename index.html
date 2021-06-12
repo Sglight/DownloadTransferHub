@@ -23,9 +23,9 @@
     <div class="container-main">
       <img class="title" srcset="src/title2.png 1400w, src/title.png 800w" src="src/title2.png">
       <div class="nav">
-        <a class="nav-item nav-now" id="parse" href="javascript:goParse()">解析</a>
-        <a class="nav-item" id="upload" href="javascript:goUpload()">上传</a>
-        <a class="nav-item" id="search" href="javascript:goSearch()">查询</a>
+        <a class="nav-item nav-now" id="tab-parse">解析</a>
+        <a class="nav-item" id="tab-upload">上传</a>
+        <a class="nav-item" id="tab-search">查询</a>
       </div>
       <form id="form">
         <label>
@@ -35,9 +35,8 @@
           <input type="text" placeholder="备注" id="remarks" autocomplete="off">
           <input type="text" id="mode" hidden="hidden" value="parse">
         </label>
-        <input type="button" id="trident" value="解析" onclick="doTrident()">
+        <input type="button" id="trident" value="解析">
       </form>
-      <br>
       <table id="parse-result-table" hidden="hidden">
         <tr>
           <th>文件</th>
@@ -45,7 +44,6 @@
           <th>密令</th>
           <th>备注</th>
           <th>操作</th>
-          <th hidden="hidden">FID</th>
         </tr>
         <!-- JS 插入数据位置 -->
       </table>
@@ -56,7 +54,6 @@
           <th>密令</th>
           <th>备注</th>
           <th>操作</th>
-          <th hidden="hidden">FID</th>
         </tr>
         <!-- JS 插入数据位置 -->
       </table>

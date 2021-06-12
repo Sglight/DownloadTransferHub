@@ -31,7 +31,7 @@ html, body {
 
 .footer-text {
     text-decoration: none;
-    color: #999;
+    color: #BDBDBD;
 }
 
 .title {
@@ -49,16 +49,24 @@ html, body {
 }
 
 .nav-item {
-    position: center;
+    display: inline-block;
     padding: 10px;
     font-size: 18px;
     text-decoration: none;
-    color: #337ab7;
+    color: #1976D2;
     flex: 1;
+    line-height: 25px;
+    transition: font-size 0.6s ease-in-out, font-weight 0.6s ease-in-out;
+}
+
+.nav-item:hover {
+    cursor: pointer;
+    font-size: 24px;
+    font-weight: bold;
 }
 
 .nav-now {
-    box-shadow: 0px 4px 2px -2px orange,inset 0 -5px 3px -6px orange;
+    box-shadow: 0px 4px 2px -2px #FF9800,inset 0 -5px 3px -6px #FF9800;
 }
 
 input {
@@ -66,14 +74,31 @@ input {
     width: 80%;
     outline-style: none;
     padding: 0;
-    border: 1px solid #337ab7;
+    border: 1px solid #1976D2;
     border-radius: 25px;
     line-height: 35px;
     box-shadow: 0px 4px 2px -2px gray;
+    transition: font-size 0.6s ease-in-out, font-weight 0.6s ease-in-out, transform 0.6s ease-in-out;
+}
+
+input[type="text"]:focus {
+    /* animation: scaleAnimation 0.6s;
+    animation-fill-mode: forwards; */
+    transform: scale(1.1);
 }
 
 input[type="button"]:hover {
     cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+@keyframes scaleAnimation {
+    from {
+        scale: 1;
+    } to {
+        scale: 1.1;
+    }
 }
 
 #inputFile {
@@ -100,7 +125,7 @@ input[type="button"]:hover {
 
 #trident {
     color: white;
-    background-color: #337ab7;
+    background-color: #1976D2;
 }
 
 #trident:disabled {
@@ -126,22 +151,22 @@ input[type="button"]:hover {
 }
 
 table {
-    margin: auto;
-    padding: 15px 0;
+    margin: 10px auto;
+    padding: 15px 0px;
     width: 80%;
     border-spacing: 0;
 }
 
 th {
     line-height: 45px;
-    border-top: 2px solid #337ab7;
-    border-bottom: 1px solid #337ab7;
+    border-top: 2px solid #1976D2;
+    border-bottom: 1px solid #1976D2;
 }
 
 td {
     line-height: 30px;
     min-width: 40px;
-    border-top: 1px solid #337ab7;
+    border-top: 1px solid #1976D2;
     max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -149,19 +174,21 @@ td {
 
 td a {
     text-decoration: none;
-    color: #337ab7;
-}
-
-.operate-form {
-    min-width: 104px;
+    color: #1976D2;
+    cursor: pointer;
 }
 
 .operate-button {
     margin: 0;
     line-height: 30px;
     width: 32px;
+    height: 30px;
     border-style: none;
     box-shadow: none;
+}
+
+.operate-button:hover {
+    cursor: pointer;
 }
 
 .delete-button {
@@ -178,12 +205,12 @@ td a {
 
 @keyframes alert-glow {
     0% {
-        border-color: rgb(163, 0, 0);
-        box-shadow: 0 0 5px rgba(255,0,0,.2), inset 0 0 5px rgba(255,0,0,.1), 0 1px 0 rgb(163, 0, 0);
+        border-color: #D32F2F;
+        box-shadow: 0 0 2px rgba(211,47,47,.2), inset 0 0 2px rgba(244,67,54,.1), 0 1px 0 #D32F2F;
     }
     100% {
-        border-color: rgb(255, 0, 0);
-        box-shadow: 0 0 10px rgba(255,0,0,.6), inset 0 0 10px rgba(255,0,0,.4), 0 1px 0 rgb(255, 0, 0);
+        border-color: #F44336;
+        box-shadow: 0 0 5px rgba(244,67,54,.6), inset 0 0 5px rgba(244,67,54,.4), 0 1px 0 #F44336;
     }
 }
 
@@ -196,5 +223,9 @@ td a {
 @media screen and (max-width: 800px) {
     .container-main {
         max-width: initial;
+    }
+
+    table {
+        font-size: 0.7em;
     }
 }
