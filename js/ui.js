@@ -14,6 +14,10 @@ function addLoadEvent(func) {
     }
 }
 
+let indicator
+let tabParse
+let indicatorPos = 0
+
 function prepareClicks() {
     if (!document.createElement || !document.createTextNode || !document.getElementById) return false
     document.getElementById('tab-parse').onclick = goParse
@@ -28,10 +32,18 @@ function prepareClicks() {
             doTrident()
         }
     }
+
+    indicator = document.getElementById('indicator')
+    tabParse = document.getElementById('tab-parse')
+    indicator.style.width = `${tabParse.clientWidth}px`
+    window.onresize = () => {
+        indicator.style.width = `${tabParse.clientWidth}px`
+        setIndicatorPosition(indicatorPos)
+    }
 }
 
 function goParse() {
-    setNowNavItem('tab-parse')
+    setIndicatorPosition(indicatorPos = 0)
     hideElement('inputFile', false)
     hideElement('uploadFile',true)
     hideElement('remarks', false)
@@ -45,7 +57,7 @@ function goParse() {
 }
 
 function goUpload() {
-    setNowNavItem('tab-upload')
+    setIndicatorPosition(indicatorPos = 1)
     hideElement('inputFile',true)
     hideElement('uploadFile', false)
     hideElement('remarks', false)
@@ -59,7 +71,7 @@ function goUpload() {
 }
 
 function goSearch() {
-    setNowNavItem('tab-search')
+    setIndicatorPosition(indicatorPos = 2)
     hideElement('inputFile',true)
     hideElement('uploadFile',true)
     hideElement('remarks',true)
@@ -71,14 +83,9 @@ function goSearch() {
     hideElement('parse-result-table', true)
 }
 
-function setNowNavItem(item) {
-    // 清空 nav-now 状态
-    let items = document.getElementsByClassName('nav-item')
-    for (let elem of items) {
-        elem.className = 'nav-item'
-    }
-    // 添加 nav-now
-    document.getElementById(item).className = 'nav-item nav-now'
+function setIndicatorPosition(position) {
+    // indicator.style.alignSelf = position
+    indicator.style.left = indicator.clientWidth * position + 'px'
 }
 
 function hideElement(id, boolean) {
@@ -148,14 +155,4 @@ function createResultTableIterate(table, responseJSON) {
         createResultTable(table, item)
         rowLength++
     }
-}
-
-function copyToClip(content, message) {
-    var aux = document.createElement('input'); 
-    aux.setAttribute('value', content); 
-    document.body.appendChild(aux); 
-    aux.select();
-    document.execCommand('copy'); 
-    document.body.removeChild(aux);
-    message ? true : message = '复制成功'
 }
