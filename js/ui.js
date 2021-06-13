@@ -144,7 +144,7 @@ function fillOperateCell(cell, className, title, func, params) {
     if (typeof(params) == 'string') {
         elem.onclick = () => {func(FID)}
     } else if (typeof(params) == 'object') {
-        elem.onclick = () => {doDelete(params[0], params[1], params[2])}
+        elem.onclick = () => {func(params[0], params[1], params[2])}
     }
     cell.appendChild(elem)
 }
