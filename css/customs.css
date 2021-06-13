@@ -228,6 +228,20 @@ td a {
     }
 
     table {
+        font-size: 0.9em;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .container-main {
+        max-width: initial;
+    }
+
+    table {
         font-size: 0.7em;
+    }
+
+    .operate-cell {
+        width: 40px;
     }
 }

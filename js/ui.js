@@ -117,6 +117,7 @@ function createResultTable(table, responseJSON) {
     fillRowCell(secretKeyCell, '', responseJSON.SecretKey)
     fillRowCell(remarksCell, '',responseJSON.remarks)
 
+    operateCell.className = 'operate-cell'
     fillOperateCell(operateCell, 'delete-button', '删除', doDelete, [responseJSON.FID, responseJSON.FileName, responseJSON.SecretKey])
     fillOperateCell(operateCell, 'change-key-button', '更改密令', doChangeKey, [responseJSON.FID, responseJSON.FileName, responseJSON.SecretKey])
     fillOperateCell(operateCell, 'change-remarks-button', '更改备注', doChangeRemarks, responseJSON.FID)
