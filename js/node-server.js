@@ -12,12 +12,14 @@ const { request, response } = require('express')
 const fileUpload = require('express-fileupload')
 const exp = express()
 
+const md5File = require('md5-file')
+
 exp.use(fileUpload({
     limits: { fileSize: 200 * 1024 * 1024 }
   }))
 
-const DOMAIN = 'https://soar.l4d2lk.cn'
-// const DOMAIN = '*'
+// const DOMAIN = 'https://soar.l4d2lk.cn'
+const DOMAIN = '*'
 const WORKPATH = path.resolve(__dirname, '..')
 
 const pgConfig = {
@@ -45,7 +47,6 @@ exp.post('/parse', async (request, response) => {
     let inputFileName = inputFileLink.substring(inputFileLink.lastIndexOf('/') + 1)
     let secretKey = request.query.secretkey
     let remarks = request.query.remarks
-    let hash = null
 
     let fileFloder = `${WORKPATH}/UserFiles/${secretKey}`
     let fileFullPath = `${fileFloder}/${inputFileName}`
@@ -75,6 +76,8 @@ exp.post('/parse', async (request, response) => {
         aria2.on("onDownloadComplete", () => {
             aria2.close()
 
+            const hash = md5File.sync(fileFullPath)
+
             // 更新数据库
             let SQLQuery = `
                 INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks") 
@@ -83,15 +86,14 @@ exp.post('/parse', async (request, response) => {
             `
             let FID
             const client = new pg.Client(pgConfig)
-            client.connect(err => {
-                // else console.log('postgreSQL connected.')
+            client.connect((err) => {
+                if (err) console.error(err)
             })
             client.query(SQLQuery)
             .then(res => {
                 FID = res.rows[0].FID
                 client.end(err => {
                     if (err) console.error(err)
-                    // else console.log('postgreSQL disconnected.')
                 })
             })
             .then(() => {
@@ -193,14 +195,12 @@ exp.post('/search', (request, response) => {
 
     client.connect(err => {
         if (err) console.error(err)
-        // else console.log('postgreSQL connected.')
     })
     client.query(SQLQuery)
     .then(res => {
         response.send(res.rows)
         client.end(err => {
             if (err) console.error(err)
-            // else console.log('postgreSQL disconnected.')
         })
     })
     .catch(err => {
@@ -218,13 +218,11 @@ exp.post('/delete', (request, response) => {
 
     client.connect(err => {
         if (err) console.log(err)
-        // else console.log('postgreSQL connected.')
     })
     client.query(SQLQuery)
     .then(() => {
         client.end(err => {
             if (err) console.log(err)
-            // else console.log('postgreSQL disconnected.')
         })
     })
     .then(() => {
