@@ -125,7 +125,13 @@ function createResultTable(table, responseJSON) {
 
 function fillRowCell(cell, href, text) {
     let elem = document.createElement('a')
-    href ? elem.href = href : elem.onclick = () => {copyToClip(text)}
+    if (href) {
+        elem.href = href
+        elem.title = '点击下载'
+    } else {
+        elem.onclick = () => {copyToClip(text)}
+        elem.title = '点击复制'
+    }
     cell.appendChild(elem)
     let txt = document.createTextNode(text)
     elem.appendChild(txt)

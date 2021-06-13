@@ -37,7 +37,7 @@ const aria2Config = {
     host: 'localhost',
     port: 6800,
     secure: false,
-    secret: '123321',
+    secret: process.env.aria2secret,
     path: '/jsonrpc'
 }
 
@@ -69,57 +69,45 @@ exp.post('/parse', async (request, response) => {
 
     let aria2 = new Aria2(aria2Config)
     await aria2.open()
-    .then(() => {
-        aria2.call('addUri', [inputFileLink], {dir: fileFloder})
-    })
-    .then(() => {
-        aria2.on("onDownloadComplete", () => {
-            aria2.close()
-
-            const hash = md5File.sync(fileFullPath)
-
-            // 更新数据库
-            let SQLQuery = `
-                INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks") 
-                VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}') 
-                RETURNING "FID"
-            `
-            let FID
-            const client = new pg.Client(pgConfig)
-            client.connect((err) => {
-                if (err) console.error(err)
-            })
-            client.query(SQLQuery)
-            .then(res => {
-                FID = res.rows[0].FID
-                client.end(err => {
-                    if (err) console.error(err)
-                })
-            })
-            .then(() => {
-                let responseData = JSON.stringify({
-                    "FileName": alterFileName,
-                    "Hash": hash,
-                    "SecretKey": secretKey,
-                    "remarks": remarks,
-                    "FID": FID
-                })
-                response.send(responseData)
-            })
-        })
-        aria2.on("onDownloadError", () => {
-            aria2.close()
-            response.status(500).send('Download Error')
-        })
-    })
-    .catch((err) => {
+    await aria2.call('addUri', [inputFileLink], {dir: fileFloder})
+    aria2.on("onDownloadComplete",async () => {
         aria2.close()
-        console.error(err)
-        response.status(400).send()
+
+        let hash = await md5File(fileFullPath)
+
+        // 更新数据库
+        let SQLQuery = `
+            INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks") 
+            VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}') 
+            RETURNING "FID"
+        `
+        const client = new pg.Client(pgConfig)
+        client.connect((err) => {
+            if (err) console.error(err)
+        })
+
+        let res = await client.query(SQLQuery)
+        let FID = res.rows[0].FID
+        client.end(err => {
+            if (err) console.error(err)
+        })
+        
+        let responseData = JSON.stringify({
+            "FileName": alterFileName,
+            "Hash": hash,
+            "SecretKey": secretKey,
+            "remarks": remarks,
+            "FID": FID
+        })
+        response.send(responseData)
+    })
+    aria2.on("onDownloadError", () => {
+        aria2.close()
+        response.status(500).send('Download Error.')
     })
 })
 
-exp.post('/upload', (request, response) => {
+exp.post('/upload', async (request, response) => {
     response.setHeader('Access-Control-Allow-Origin', DOMAIN)
 
     let file = request.files.file
@@ -138,52 +126,45 @@ exp.post('/upload', (request, response) => {
     client.connect(err => {
         if (err) console.error(err)
     })
-    client.query(SQLQuery)
-    .then(res => {
-        FID = res.rows[0].FID
-        client.end(err => {
-            if (err) console.error(err)
-        })
-    })
-    .then(() => {
-        let fileFloder = `${WORKPATH}/UserFiles/${secretKey}`
-        let fileFullPath = `${fileFloder}/${fileName}`
 
-        // 检查密令目录是否存在
-        if (!fs.existsSync(fileFloder)) {
-            fs.mkdirSync(fileFloder)
-        }
+    let res = await client.query(SQLQuery)
+    FID = res.rows[0].FID
+    client.end(err => {
+        if (err) console.error(err)
+    })
+    
+    let fileFloder = `${WORKPATH}/UserFiles/${secretKey}`
+    let fileFullPath = `${fileFloder}/${fileName}`
 
-        // 检查是否已存在相同文件
-        let i = 1
-        let fileNameWithoutSuffix = fileName.substring(0, fileName.lastIndexOf('.'))
-        let fileSuffix = fileName.substring(fileName.lastIndexOf('.'))
-        let alterFileName = fileName
-        while (fs.existsSync(fileFullPath)) {
-            alterFileName = `${fileNameWithoutSuffix}.${i}${fileSuffix}`
-            fileFullPath = `${fileFloder}/${alterFileName}`
-            i++
-        }
-        fileName = alterFileName
-        file.mv(fileFullPath)
+    // 检查密令目录是否存在
+    if (!fs.existsSync(fileFloder)) {
+        fs.mkdirSync(fileFloder)
+    }
+
+    // 检查是否已存在相同文件
+    let i = 1
+    let fileNameWithoutSuffix = fileName.substring(0, fileName.lastIndexOf('.'))
+    let fileSuffix = fileName.substring(fileName.lastIndexOf('.'))
+    let alterFileName = fileName
+    while (fs.existsSync(fileFullPath)) {
+        alterFileName = `${fileNameWithoutSuffix}.${i}${fileSuffix}`
+        fileFullPath = `${fileFloder}/${alterFileName}`
+        i++
+    }
+    fileName = alterFileName
+    file.mv(fileFullPath)
+
+    let responseData = JSON.stringify({
+        "FileName": fileName,
+        "Hash": hash,
+        "SecretKey": secretKey,
+        "remarks": remarks,
+        "FID": FID
     })
-    .then(() => {
-        let responseData = JSON.stringify({
-            "FileName": fileName,
-            "Hash": hash,
-            "SecretKey": secretKey,
-            "remarks": remarks,
-            "FID": FID
-        })
-        response.send(responseData)
-    })
-    .catch((err) => {
-        response.status(500).send()
-        console.error(err)
-    })
+    response.send(responseData)
 })
 
-exp.post('/search', (request, response) => {
+exp.post('/search', async (request, response) => {
     response.setHeader('Access-Control-Allow-Origin', DOMAIN)
 
     let SQLQuery = `
@@ -196,20 +177,15 @@ exp.post('/search', (request, response) => {
     client.connect(err => {
         if (err) console.error(err)
     })
-    client.query(SQLQuery)
-    .then(res => {
-        response.send(res.rows)
-        client.end(err => {
-            if (err) console.error(err)
-        })
-    })
-    .catch(err => {
-        response.status(500).send()
-        console.error(err)
+
+    let res = await client.query(SQLQuery)
+    response.send(res.rows)
+    client.end(err => {
+        if (err) console.error(err)
     })
 })
 
-exp.post('/delete', (request, response) => {
+exp.post('/delete', async (request, response) => {
     response.setHeader('Access-Control-Allow-Origin', DOMAIN)
 
     let SQLQuery = `DELETE FROM "UserFiles" WHERE "FID"='${request.query.FID}'`
@@ -219,25 +195,18 @@ exp.post('/delete', (request, response) => {
     client.connect(err => {
         if (err) console.log(err)
     })
-    client.query(SQLQuery)
-    .then(() => {
-        client.end(err => {
-            if (err) console.log(err)
-        })
+    await client.query(SQLQuery)
+    client.end(err => {
+        if (err) console.log(err)
     })
-    .then(() => {
-        let fileFullPath = `${WORKPATH}/UserFiles/${request.query.secretkey}/${request.query.filename}`
-        if (fs.existsSync(fileFullPath))
-            fs.rmSync(fileFullPath)
-        response.send('Deleted.')
-    })
-    .catch(err => {
-        response.status(500).send()
-        console.log(err)
-    })
+    
+    let fileFullPath = `${WORKPATH}/UserFiles/${request.query.secretkey}/${request.query.filename}`
+    if (fs.existsSync(fileFullPath))
+        fs.rmSync(fileFullPath)
+    response.send('Deleted.')
 })
 
-exp.post('/changekey', (request, response) => {
+exp.post('/changekey', async (request, response) => {
     // 参数：FID, oldkey, newkey, mode
     
 })
