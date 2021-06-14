@@ -1,4 +1,4 @@
-"use strict";
+"use strict"
 const DOMAIN = 'https://soar.l4d2lk.cn'
 // const DOMAIN = 'http://localhost:8001'
 
@@ -47,7 +47,7 @@ function doUpload() {
     let remarks = encodeURIComponent(document.getElementById('remarks').value)
     let fileObj = document.getElementById('uploadFile').files[0]
 
-    var form = new FormData();
+    let form = new FormData()
     form.append("file", fileObj)
 
     const xhr = new XMLHttpRequest()
@@ -133,11 +133,11 @@ function doTrident() {
 }
 
 function copyToClip(content, message) {
-    let aux = document.createElement('input');
-    aux.setAttribute('value', content);
-    document.body.appendChild(aux);
-    aux.select();
-    document.execCommand('copy');
-    document.body.removeChild(aux);
+    let aux = document.createElement('input')
+    aux.setAttribute('value', content)
+    document.body.appendChild(aux)
+    aux.select()
+    document.execCommand('copy')
+    document.body.removeChild(aux)
     message ? true : message = '复制成功'
 }

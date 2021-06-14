@@ -1,4 +1,4 @@
-"use strict";
+"use strict"
 
 const pg = require('pg')
 require("dotenv").config()
