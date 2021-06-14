@@ -11,7 +11,7 @@ function doParse() {
 
     if (!inputFileLink) {
         inputFile.style.animation = "alert-glow 250ms ease-out 3"
-        setTimeout(() => {inputFile.style.animation = ""}, 750)
+        setTimeout(() => { inputFile.style.animation = "" }, 750)
         return
     }
     const xhr = new XMLHttpRequest()
@@ -37,7 +37,7 @@ function doUpload() {
     let uploadFile = document.getElementById('uploadFile')
     if (!uploadFile.value) {
         uploadFile.style.animation = "alert-glow 250ms ease-out 3"
-        setTimeout(() => {uploadFile.style.animation = ""}, 750)
+        setTimeout(() => { uploadFile.style.animation = "" }, 750)
         return
     }
 
@@ -93,7 +93,7 @@ function doDelete(FID, fileName, secretKey) {
     xhr.open('POST', requestUrl)
     xhr.send()
 
-    xhr.onreadystatechange = function() {
+    xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
             let row = document.getElementById(`fid-${FID}`)
             row.parentElement.removeChild(row)
@@ -133,11 +133,11 @@ function doTrident() {
 }
 
 function copyToClip(content, message) {
-    var aux = document.createElement('input'); 
-    aux.setAttribute('value', content); 
-    document.body.appendChild(aux); 
+    let aux = document.createElement('input');
+    aux.setAttribute('value', content);
+    document.body.appendChild(aux);
     aux.select();
-    document.execCommand('copy'); 
+    document.execCommand('copy');
     document.body.removeChild(aux);
     message ? true : message = '复制成功'
 }

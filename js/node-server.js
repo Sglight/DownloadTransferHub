@@ -16,7 +16,7 @@ const md5File = require('md5-file')
 
 exp.use(fileUpload({
     limits: { fileSize: 200 * 1024 * 1024 }
-  }))
+}))
 
 const DOMAIN = 'https://soar.l4d2lk.cn'
 // const DOMAIN = '*'
@@ -48,15 +48,15 @@ exp.post('/parse', async (request, response) => {
         let inputFileName = inputFileLink.substring(inputFileLink.lastIndexOf('/') + 1)
         let secretKey = request.query.secretkey
         let remarks = request.query.remarks
-    
+
         let fileFloder = `${WORKPATH}/UserFiles/${secretKey}`
         let fileFullPath = `${fileFloder}/${inputFileName}`
-    
+
         // 检查密令目录是否存在
         if (!fs.existsSync(fileFloder)) {
             fs.mkdirSync(fileFloder)
         }
-    
+
         // 检查是否已存在相同文件
         let i = 1
         let alterFileName = inputFileName
@@ -67,15 +67,15 @@ exp.post('/parse', async (request, response) => {
             fileFullPath = `${fileFloder}/${alterFileName}`
             i++
         }
-    
+
         let aria2 = new Aria2(aria2Config)
         await aria2.open()
-        await aria2.call('addUri', [inputFileLink], {dir: fileFloder})
-        aria2.on("onDownloadComplete",async () => {
+        await aria2.call('addUri', [inputFileLink], { dir: fileFloder })
+        aria2.on("onDownloadComplete", async () => {
             aria2.close()
-    
+
             let hash = await md5File(fileFullPath)
-    
+
             // 更新数据库
             let SQLQuery = `
                 INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks") 
@@ -86,13 +86,13 @@ exp.post('/parse', async (request, response) => {
             client.connect((err) => {
                 if (err) console.error(err)
             })
-    
+
             let res = await client.query(SQLQuery)
             let FID = res.rows[0].FID
             client.end(err => {
                 if (err) console.error(err)
             })
-            
+
             let responseData = JSON.stringify({
                 "FileName": alterFileName,
                 "Hash": hash,
@@ -116,13 +116,13 @@ exp.post('/parse', async (request, response) => {
 exp.post('/upload', async (request, response) => {
     try {
         response.setHeader('Access-Control-Allow-Origin', DOMAIN)
-    
+
         let file = request.files.file
         let fileName = file.name
         let hash = file.md5
         let secretKey = request.query.secretkey
         let remarks = request.query.remarks
-    
+
         let SQLQuery = `
             INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks") 
             VALUES('${fileName}', '${hash}', '${secretKey}', '${remarks}') 
@@ -133,21 +133,21 @@ exp.post('/upload', async (request, response) => {
         client.connect(err => {
             if (err) console.error(err)
         })
-    
+
         let res = await client.query(SQLQuery)
         FID = res.rows[0].FID
         client.end(err => {
             if (err) console.error(err)
         })
-        
+
         let fileFloder = `${WORKPATH}/UserFiles/${secretKey}`
         let fileFullPath = `${fileFloder}/${fileName}`
-    
+
         // 检查密令目录是否存在
         if (!fs.existsSync(fileFloder)) {
             fs.mkdirSync(fileFloder)
         }
-    
+
         // 检查是否已存在相同文件
         let i = 1
         let fileNameWithoutSuffix = fileName.substring(0, fileName.lastIndexOf('.'))
@@ -160,7 +160,7 @@ exp.post('/upload', async (request, response) => {
         }
         fileName = alterFileName
         file.mv(fileFullPath)
-    
+
         let responseData = JSON.stringify({
             "FileName": fileName,
             "Hash": hash,
@@ -218,7 +218,7 @@ exp.post('/delete', async (request, response) => {
         client.end(err => {
             if (err) console.log(err)
         })
-        
+
         let fileFullPath = `${WORKPATH}/UserFiles/${request.query.secretkey}/${request.query.filename}`
         if (fs.existsSync(fileFullPath))
             fs.rmSync(fileFullPath)
@@ -232,7 +232,7 @@ exp.post('/delete', async (request, response) => {
 
 exp.post('/changekey', async (request, response) => {
     // 参数：FID, oldkey, newkey, mode
-    
+
 })
 
 exp.listen(8001, () => {

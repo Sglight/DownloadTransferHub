@@ -7,7 +7,7 @@ function addLoadEvent(func) {
     if (typeof window.onload != 'function') {
         window.onload = func;
     } else {
-        window.onload = function() {
+        window.onload = function () {
             oldonload()
             func()
         }
@@ -45,20 +45,20 @@ function prepareClicks() {
 function goParse() {
     setIndicatorPosition(indicatorPos = 0)
     hideElement('inputFile', false)
-    hideElement('uploadFile',true)
+    hideElement('uploadFile', true)
     hideElement('remarks', false)
     setElementValue('mode', 'parse')
     setElementValue('trident', '解析')
     document.getElementById('secretKey').style.width = "35%"
     hideElement('search-result-table', true)
 
-    document.getElementById('parse-result-table').rows.length > 1 ? 
+    document.getElementById('parse-result-table').rows.length > 1 ?
         hideElement('parse-result-table', false) : hideElement('parse-result-table', true)
 }
 
 function goUpload() {
     setIndicatorPosition(indicatorPos = 1)
-    hideElement('inputFile',true)
+    hideElement('inputFile', true)
     hideElement('uploadFile', false)
     hideElement('remarks', false)
     setElementValue('mode', 'upload')
@@ -66,15 +66,15 @@ function goUpload() {
     document.getElementById('secretKey').style.width = "35%"
     hideElement('search-result-table', true)
 
-    document.getElementById('parse-result-table').rows.length > 1 ? 
+    document.getElementById('parse-result-table').rows.length > 1 ?
         hideElement('parse-result-table', false) : hideElement('parse-result-table', true)
 }
 
 function goSearch() {
     setIndicatorPosition(indicatorPos = 2)
-    hideElement('inputFile',true)
-    hideElement('uploadFile',true)
-    hideElement('remarks',true)
+    hideElement('inputFile', true)
+    hideElement('uploadFile', true)
+    hideElement('remarks', true)
     setElementValue('mode', 'search')
     setElementValue('trident', '查询')
     document.getElementById('secretKey').style.width = "80%"
@@ -115,7 +115,7 @@ function createResultTable(table, responseJSON) {
     fillRowCell(fileNameCell, `UserFiles/${responseJSON.SecretKey}/${responseJSON.FileName}`, responseJSON.FileName)
     fillRowCell(hashCell, '', responseJSON.Hash)
     fillRowCell(secretKeyCell, '', responseJSON.SecretKey)
-    fillRowCell(remarksCell, '',responseJSON.remarks)
+    fillRowCell(remarksCell, '', responseJSON.remarks)
 
     operateCell.className = 'operate-cell'
     fillOperateCell(operateCell, 'delete-button', '删除', doDelete, [responseJSON.FID, responseJSON.FileName, responseJSON.SecretKey])
@@ -129,7 +129,7 @@ function fillRowCell(cell, href, text) {
         elem.href = href
         elem.title = '点击下载'
     } else {
-        elem.onclick = () => {copyToClip(text)}
+        elem.onclick = () => { copyToClip(text) }
         elem.title = '点击复制'
     }
     cell.appendChild(elem)
@@ -141,10 +141,10 @@ function fillOperateCell(cell, className, title, func, params) {
     let elem = document.createElement('button')
     elem.setAttribute('class', 'operate-button ' + className)
     elem.title = title
-    if (typeof(params) == 'string') {
-        elem.onclick = () => {func(FID)}
-    } else if (typeof(params) == 'object') {
-        elem.onclick = () => {func(params[0], params[1], params[2])}
+    if (typeof (params) == 'string') {
+        elem.onclick = () => { func(FID) }
+    } else if (typeof (params) == 'object') {
+        elem.onclick = () => { func(params[0], params[1], params[2]) }
     }
     cell.appendChild(elem)
 }
