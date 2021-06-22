@@ -141,10 +141,10 @@ function fillOperateCell(cell, className, title, func, params) {
     let elem = document.createElement('button')
     elem.setAttribute('class', 'operate-button ' + className)
     elem.title = title
-    if (typeof (params) == 'string') {
-        elem.onclick = () => { func(FID) }
-    } else if (typeof (params) == 'object') {
+    if (typeof(params) == 'object') {
         elem.onclick = () => { func(params[0], params[1], params[2]) }
+    } else {
+        elem.onclick = () => { func(params) }
     }
     cell.appendChild(elem)
 }

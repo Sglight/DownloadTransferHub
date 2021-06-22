@@ -1,6 +1,6 @@
 "use strict"
-const DOMAIN = 'https://soar.l4d2lk.cn'
-// const DOMAIN = 'http://localhost:8001'
+// const DOMAIN = 'https://soar.l4d2lk.cn'
+const DOMAIN = 'http://localhost:8001'
 
 function doParse() {
     let inputFile = document.getElementById('inputFile')
@@ -114,7 +114,20 @@ function doChangeKey(FID, fileName, secretKey) {
 }
 
 function doChangeRemarks(FID) {
-    alert('还没做')
+    let row = document.getElementById(`fid-${FID}`)
+    let newRemarks = prompt("请输入新备注", row.childNodes[3].childNodes[0].text)
+    if (newRemarks === null) return
+
+    let xhr = new XMLHttpRequest()
+    let requestUrl = `${DOMAIN}/changeremarks?FID=${FID}&newremarks=${newRemarks}`
+    xhr.open('POST', requestUrl)
+    xhr.send()
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
+            row.childNodes[3].childNodes[0].text = newRemarks // row - td[3] - a[0] - text
+        }
+    }
 }
 
 function doTrident() {

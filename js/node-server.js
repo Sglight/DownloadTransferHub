@@ -18,8 +18,8 @@ exp.use(fileUpload({
     limits: { fileSize: 200 * 1024 * 1024 }
 }))
 
-const DOMAIN = 'https://soar.l4d2lk.cn'
-// const DOMAIN = '*'
+// const DOMAIN = 'https://soar.l4d2lk.cn'
+const DOMAIN = '*'
 const WORKPATH = path.resolve(__dirname, '..')
 
 const pgConfig = {
@@ -232,7 +232,33 @@ exp.post('/delete', async (request, response) => {
 
 exp.post('/changekey', async (request, response) => {
     // 参数：FID, oldkey, newkey, mode
+    
+})
 
+exp.post('/changeremarks', async (request, response) => {
+    // 参数：FID，newRemarks
+    try {
+        response.setHeader('Access-Control-Allow-Origin', DOMAIN)
+    
+        let newRemarks = request.query.newremarks
+        let SQLQuery = `UPDATE "UserFiles" SET "remarks"='${newRemarks}' WHERE "FID"='${request.query.FID}'`
+    
+        const client = new pg.Client(pgConfig)
+    
+        client.connect(err => {
+            if (err) console.log(err)
+        })
+        await client.query(SQLQuery)
+        client.end(err => {
+            if (err) console.log(err)
+        })
+    
+        response.send(`Remarks changed to ${newRemarks}.`)
+    }
+    catch (err) {
+        console.error(err)
+        response.status(400).send(err)
+    }
 })
 
 exp.listen(8001, () => {
