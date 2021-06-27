@@ -112,7 +112,7 @@ function createResultTable(table, responseJSON) {
     let remarksCell = tableRow.insertCell(3)
     let operateCell = tableRow.insertCell(4)
 
-    fillRowCell(fileNameCell, `UserFiles/${responseJSON.SecretKey}/${responseJSON.FileName}`, responseJSON.FileName)
+    fillRowCell(fileNameCell, `UserFiles/${responseJSON.SecretKey}/${responseJSON.FileName}`, decodeURIComponent(responseJSON.FileName))
     fillRowCell(hashCell, '', responseJSON.Hash)
     fillRowCell(secretKeyCell, '', responseJSON.SecretKey)
     fillRowCell(remarksCell, '', responseJSON.remarks)

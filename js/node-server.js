@@ -74,7 +74,7 @@ exp.post('/parse', async (request, response) => {
         aria2.on("onDownloadComplete", async () => {
             aria2.close()
 
-            let hash = await md5File(fileFullPath)
+            let hash = await md5File(decodeURIComponent(fileFullPath))
 
             // 更新数据库
             let SQLQuery = `
@@ -102,7 +102,7 @@ exp.post('/parse', async (request, response) => {
             })
             response.send(responseData)
         })
-        aria2.on("onDownloadError", () => {
+        aria2.on("onDownloadError", () => {1
             aria2.close()
             response.status(500).send('Download Error.')
         })
@@ -128,14 +128,13 @@ exp.post('/upload', async (request, response) => {
             VALUES('${fileName}', '${hash}', '${secretKey}', '${remarks}') 
             RETURNING "FID"
         `
-        let FID
         const client = new pg.Client(pgConfig)
         client.connect(err => {
             if (err) console.error(err)
         })
 
         let res = await client.query(SQLQuery)
-        FID = res.rows[0].FID
+        let FID = res.rows[0].FID
         client.end(err => {
             if (err) console.error(err)
         })
@@ -207,17 +206,7 @@ exp.post('/delete', async (request, response) => {
     try {
         response.setHeader('Access-Control-Allow-Origin', DOMAIN)
 
-        let SQLQuery = `DELETE FROM "UserFiles" WHERE "FID"='${request.query.FID}'`
-
-        const client = new pg.Client(pgConfig)
-
-        client.connect(err => {
-            if (err) console.log(err)
-        })
-        await client.query(SQLQuery)
-        client.end(err => {
-            if (err) console.log(err)
-        })
+        deleteRowDB(request.query.FID)
 
         let fileFullPath = `${WORKPATH}/UserFiles/${request.query.secretkey}/${request.query.filename}`
         if (fs.existsSync(fileFullPath))
@@ -231,12 +220,90 @@ exp.post('/delete', async (request, response) => {
 })
 
 exp.post('/changekey', async (request, response) => {
-    // 参数：FID, oldkey, newkey, mode
-    
+    // 目标文件夹不存在
+    // 移动后重复
+    try {
+        response.setHeader('Access-Control-Allow-Origin', DOMAIN)
+
+        let FID = request.query.FID
+        let fileName = request.query.filename
+        let oldKey = request.query.oldkey
+        let newKey = request.query.newkey
+        let mode = request.query.mode
+        let bExisted = false
+
+        let oldFileFullPath = `${WORKPATH}/UserFiles/${oldKey}/${fileName}`
+        let newFileFloder = `${WORKPATH}/UserFiles/${newKey}/`
+        let newFileFullPath = `${WORKPATH}/UserFiles/${newKey}/${fileName}`
+        if (!fs.existsSync(oldFileFullPath)) return // 源文件不存在
+        if (!fs.existsSync(newFileFloder)) { // 目标文件夹不存在，新建
+            fs.mkdirSync(newFileFloder)
+        }
+        if (fs.existsSync(newFileFullPath)) { // 目标文件名重复，对比 hash，不重复则加.1
+            // 用文件名和密令查数据库
+            let SQLQuery = `SELECT "Hash" FROM "UserFiles" 
+            WHERE ("SecretKey"='${newKey}' AND "FileName"='${fileName}') OR ("FID"='${FID}')`
+
+            const client = new pg.Client(pgConfig)
+
+            client.connect(err => {
+                if (err) console.error(err)
+            })
+
+            let result = await client.query(SQLQuery)
+            // console.log(result.rows[0])
+            let hash1 = result.rows[0].Hash
+            let hash2 = result.rows[1].Hash
+
+            if (hash1.localeCompare(hash2) != 0) {
+                let i = 1
+                let fileNameWithoutSuffix = fileName.substring(0, fileName.lastIndexOf('.'))
+                let fileSuffix = fileName.substring(fileName.lastIndexOf('.'))
+                let alterFileName = fileName
+                while (fs.existsSync(newFileFullPath)) {
+                    alterFileName = `${fileNameWithoutSuffix}.${i}${fileSuffix}`
+                    newFileFullPath = `${fileFloder}/${alterFileName}`
+                    i++
+                }
+            } else { // Hash 重复，不处理
+                bExisted = true
+            }
+            client.end(err => {
+                if (err) console.error(err)
+            })
+        }
+        if (mode == 'change' && !bExisted) {
+            fs.renameSync(oldFileFullPath, newFileFullPath)
+        } else if (mode == 'add' && !bExisted) {
+            fs.linkSync(oldFileFullPath, newFileFullPath)
+        }
+
+        let CHANGEQUERY = `UPDATE "UserFiles" SET "SecretKey"='${newKey}' WHERE "FID"='${FID}'`
+        let ADDQUERY = `INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks") 
+        SELECT "FileName", "Hash", '${newKey}', "remarks" FROM "UserFiles" WHERE "FID"='${FID}'`
+
+        const client = new pg.Client(pgConfig)
+
+        client.connect(err => {
+            if (err) console.log(err)
+        })
+        if (mode == 'change' && !bExisted) {
+            await client.query(CHANGEQUERY)
+        } else if (mode == 'add' && !bExisted) {
+            await client.query(ADDQUERY)
+        }
+        client.end(err => {
+            if (err) console.log(err)
+        })
+        response.send(`Secert Key Changed from ${oldKey} to ${newKey}`)
+    }
+    catch (err) {
+        console.error(err)
+        response.status(400).send(err)
+    }
 })
 
 exp.post('/changeremarks', async (request, response) => {
-    // 参数：FID，newRemarks
     try {
         response.setHeader('Access-Control-Allow-Origin', DOMAIN)
     
@@ -260,6 +327,24 @@ exp.post('/changeremarks', async (request, response) => {
         response.status(400).send(err)
     }
 })
+
+async function deleteRowDB(FID) {
+    let SQLQuery = `DELETE FROM "UserFiles" WHERE "FID"='${FID}'`
+
+    const client = new pg.Client(pgConfig)
+
+    client.connect(err => {
+        if (err) console.log(err)
+    })
+    await client.query(SQLQuery)
+    client.end(err => {
+        if (err) console.log(err)
+    })
+}
+
+async function rename(fileName) {
+
+}
 
 exp.listen(8001, () => {
 })

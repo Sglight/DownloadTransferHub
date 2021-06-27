@@ -93,7 +93,7 @@ function doDelete(FID, fileName, secretKey) {
     xhr.open('POST', requestUrl)
     xhr.send()
 
-    xhr.onreadystatechange = function () {
+    xhr.onreadystatechange = () => {
         if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
             let row = document.getElementById(`fid-${FID}`)
             row.parentElement.removeChild(row)
@@ -103,14 +103,29 @@ function doDelete(FID, fileName, secretKey) {
 
 function doChangeKey(FID, fileName, secretKey) {
     // 参数：FID, oldkey, newkey, mode
-    // let newKey = prompt("输入新的密令\n可以 '更改' 或者 '添加'")
-    // if (select === true) {
-    //     let select = confirm(`可以 '更改' 或者 '添加'\n点击 '确定' 更改为 '${newKey}'\n点击 '取消' 增加密令 '${newKey}'`)
-    //     // 更改
-    // } else if (select === false) {
-    //     // 增加
-    // }
-    alert('还没做')
+    let row = document.getElementById(`fid-${FID}`)
+    let oldKey = row.childNodes[2].childNodes[0].text
+    let newKey = prompt(`输入新的密令\n当前密令为 '${oldKey}'`)
+    if (newKey === null) return
+
+    let select = confirm(`可以 '更改' 或者 '添加'\n点击 '确定' 更改为 '${newKey}'\n点击 '取消' 增加密令 '${newKey}'`)
+    let mode
+    select ? mode = 'change' : mode = 'add'
+    
+    let xhr = new XMLHttpRequest()
+    let requestUrl = `${DOMAIN}/changekey?FID=${FID}&filename=${fileName}&oldkey=${oldKey}&newkey=${newKey}&mode=${mode}`
+    xhr.open('POST', requestUrl)
+    xhr.send()
+
+    xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
+            if (mode == 'change') {
+                row.childNodes[2].childNodes[0].text = newKey
+            } else if (mode == 'add') {
+                row.childNodes[2].childNodes[0].text += ` | ${newKey}`
+            }
+        }
+    }
 }
 
 function doChangeRemarks(FID) {
@@ -123,7 +138,7 @@ function doChangeRemarks(FID) {
     xhr.open('POST', requestUrl)
     xhr.send()
 
-    xhr.onreadystatechange = function () {
+    xhr.onreadystatechange = () => {
         if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
             row.childNodes[3].childNodes[0].text = newRemarks // row - td[3] - a[0] - text
         }
