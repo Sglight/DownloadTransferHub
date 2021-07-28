@@ -87,12 +87,14 @@ exp.post('/parse', async (request, response) => {
             const client = new pg.Client(pgConfig)
             client.connect((err) => {
                 if (err) console.error(err)
+                response.status(400).send(err)
             })
 
             let res = await client.query(SQLQuery)
             let FID = res.rows[0].FID
             client.end(err => {
                 if (err) console.error(err)
+                response.status(400).send(err)
             })
 
             let responseData = JSON.stringify({
@@ -135,12 +137,14 @@ exp.post('/upload', async (request, response) => {
         const client = new pg.Client(pgConfig)
         client.connect(err => {
             if (err) console.error(err)
+            response.status(400).send(err)
         })
 
         let res = await client.query(SQLQuery)
         let FID = res.rows[0].FID
         client.end(err => {
             if (err) console.error(err)
+            response.status(400).send(err)
         })
 
         let fileFloder = `${WORKPATH}/UserFiles/${secretKey}`
