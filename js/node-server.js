@@ -48,6 +48,8 @@ exp.post('/parse', async (request, response) => {
         let inputFileName = inputFileLink.substring(inputFileLink.lastIndexOf('/') + 1)
         let secretKey = request.query.secretkey
         let remarks = request.query.remarks
+        let ip = request.ip
+        let ua = request.headers['user-agent']
 
         let fileFloder = `${WORKPATH}/UserFiles/${secretKey}`
         let fileFullPath = `${fileFloder}/${inputFileName}`
@@ -78,8 +80,8 @@ exp.post('/parse', async (request, response) => {
 
             // 更新数据库
             let SQLQuery = `
-                INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks") 
-                VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}') 
+                INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks", "originlink", "ip", "ua") 
+                VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}', '${inputFileLink}', '${ip}', ${ua}) 
                 RETURNING "FID"
             `
             const client = new pg.Client(pgConfig)
@@ -220,8 +222,6 @@ exp.post('/delete', async (request, response) => {
 })
 
 exp.post('/changekey', async (request, response) => {
-    // 目标文件夹不存在
-    // 移动后重复
     try {
         response.setHeader('Access-Control-Allow-Origin', DOMAIN)
 
