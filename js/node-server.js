@@ -86,15 +86,19 @@ exp.post('/parse', async (request, response) => {
             `
             const client = new pg.Client(pgConfig)
             client.connect((err) => {
-                if (err) console.error(err)
-                response.status(400).send(err)
+                if (err) {
+                    console.error(err)
+                    response.status(400).send(err)
+                }
             })
 
             let res = await client.query(SQLQuery)
             let FID = res.rows[0].FID
             client.end(err => {
-                if (err) console.error(err)
-                response.status(400).send(err)
+                if (err) {
+                    console.error(err)
+                    response.status(400).send(err)
+                }
             })
 
             let responseData = JSON.stringify({
@@ -135,15 +139,19 @@ exp.post('/upload', async (request, response) => {
         `
         const client = new pg.Client(pgConfig)
         client.connect(err => {
-            if (err) console.error(err)
-            response.status(400).send(err)
+            if (err) {
+                console.error(err)
+                response.status(400).send(err)
+            }
         })
 
         let res = await client.query(SQLQuery)
         let FID = res.rows[0].FID
         client.end(err => {
-            if (err) console.error(err)
-            response.status(400).send(err)
+            if (err) {
+                console.error(err)
+                response.status(400).send(err)
+            }
         })
 
         let fileFloder = `${WORKPATH}/UserFiles/${secretKey}`
@@ -183,9 +191,8 @@ exp.post('/upload', async (request, response) => {
 })
 
 exp.post('/search', async (request, response) => {
+    response.setHeader('Access-Control-Allow-Origin', DOMAIN)
     try {
-        response.setHeader('Access-Control-Allow-Origin', DOMAIN)
-
         let SQLQuery = `
             SELECT "FileName", "Hash", "SecretKey", "remarks", "FID" 
             FROM "UserFiles" WHERE "SecretKey" = '${request.query.secretkey}'
@@ -194,13 +201,19 @@ exp.post('/search', async (request, response) => {
         const client = new pg.Client(pgConfig)
 
         client.connect(err => {
-            if (err) console.error(err)
+            if (err) {
+                console.error(err)
+                response.status(400).send(err)
+            }
         })
 
         let res = await client.query(SQLQuery)
         response.send(res.rows)
         client.end(err => {
-            if (err) console.error(err)
+            if (err) {
+                console.error(err)
+                response.status(400).send(err)
+            }
         })
     }
     catch (err) {
@@ -210,9 +223,8 @@ exp.post('/search', async (request, response) => {
 })
 
 exp.post('/delete', async (request, response) => {
+    response.setHeader('Access-Control-Allow-Origin', DOMAIN)
     try {
-        response.setHeader('Access-Control-Allow-Origin', DOMAIN)
-
         deleteRowDB(request.query.FID)
 
         let fileFullPath = `${WORKPATH}/UserFiles/${request.query.secretkey}/${request.query.filename}`
@@ -252,7 +264,10 @@ exp.post('/changekey', async (request, response) => {
             const client = new pg.Client(pgConfig)
 
             client.connect(err => {
-                if (err) console.error(err)
+                if (err) {
+                    console.error(err)
+                    response.status(400).send(err)
+                }
             })
 
             let result = await client.query(SQLQuery)
@@ -274,7 +289,10 @@ exp.post('/changekey', async (request, response) => {
                 bExisted = true
             }
             client.end(err => {
-                if (err) console.error(err)
+                if (err) {
+                    console.error(err)
+                    response.status(400).send(err)
+                }
             })
         }
         if (mode == 'change' && !bExisted) {
@@ -290,7 +308,10 @@ exp.post('/changekey', async (request, response) => {
         const client = new pg.Client(pgConfig)
 
         client.connect(err => {
-            if (err) console.log(err)
+            if (err) {
+                console.error(err)
+                response.status(400).send(err)
+            }
         })
         if (mode == 'change' && !bExisted) {
             await client.query(CHANGEQUERY)
@@ -298,7 +319,10 @@ exp.post('/changekey', async (request, response) => {
             await client.query(ADDQUERY)
         }
         client.end(err => {
-            if (err) console.log(err)
+            if (err) {
+                console.error(err)
+                response.status(400).send(err)
+            }
         })
         response.send(`Secert Key Changed from ${oldKey} to ${newKey}`)
     }
