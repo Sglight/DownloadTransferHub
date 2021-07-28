@@ -134,7 +134,7 @@ exp.post('/upload', async (request, response) => {
 
         let SQLQuery = `
             INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks", "originlink", "ip", "ua") 
-            VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}', '${inputFileLink}', '${ip}', '${ua}') 
+            VALUES('${fileName}', '${hash}', '${secretKey}', '${remarks}', '${inputFileLink}', '${ip}', '${ua}') 
             RETURNING "FID"
         `
         const client = new pg.Client(pgConfig)
