@@ -81,7 +81,7 @@ exp.post('/parse', async (request, response) => {
             // 更新数据库
             let SQLQuery = `
                 INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks", "originlink", "ip", "ua") 
-                VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}', '${inputFileLink}', '${ip}', ${ua}) 
+                VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}', '${inputFileLink}', '${ip}', '${ua}') 
                 RETURNING "FID"
             `
             const client = new pg.Client(pgConfig)
@@ -131,7 +131,7 @@ exp.post('/upload', async (request, response) => {
 
         let SQLQuery = `
             INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks", "originlink", "ip", "ua") 
-            VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}', '${inputFileLink}', '${ip}', ${ua}) 
+            VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}', '${inputFileLink}', '${ip}', '${ua}') 
             RETURNING "FID"
         `
         const client = new pg.Client(pgConfig)
