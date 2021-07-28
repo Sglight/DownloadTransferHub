@@ -42,8 +42,8 @@ const aria2Config = {
 }
 
 exp.post('/parse', async (request, response) => {
+    response.setHeader('Access-Control-Allow-Origin', DOMAIN)
     try {
-        response.setHeader('Access-Control-Allow-Origin', DOMAIN)
         let inputFileLink = request.query.inputfile
         let inputFileName = inputFileLink.substring(inputFileLink.lastIndexOf('/') + 1)
         let secretKey = request.query.secretkey
@@ -118,9 +118,8 @@ exp.post('/parse', async (request, response) => {
 })
 
 exp.post('/upload', async (request, response) => {
+    response.setHeader('Access-Control-Allow-Origin', DOMAIN)
     try {
-        response.setHeader('Access-Control-Allow-Origin', DOMAIN)
-
         let file = request.files.file
         let fileName = file.name
         let hash = file.md5
