@@ -48,7 +48,7 @@ exp.post('/parse', async (request, response) => {
         let inputFileName = inputFileLink.substring(inputFileLink.lastIndexOf('/') + 1)
         let secretKey = request.query.secretkey
         let remarks = request.query.remarks
-        let ip = request.ip
+        let ip = request.headers['x-forwarded-for'] || req.socket.remoteAddress
         let ua = request.headers['user-agent']
 
         let fileFloder = `${WORKPATH}/UserFiles/${secretKey}`
@@ -129,7 +129,7 @@ exp.post('/upload', async (request, response) => {
         let hash = file.md5
         let secretKey = request.query.secretkey
         let remarks = request.query.remarks
-        let ip = request.ip
+        let ip = request.headers['x-forwarded-for'] || req.socket.remoteAddress
         let ua = request.headers['user-agent']
 
         let SQLQuery = `
