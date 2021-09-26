@@ -375,5 +375,9 @@ async function rename(fileName) {
 
 }
 
+async function checkDuplicateMD5(md5) {
+
+}
+
 exp.listen(8001, () => {
 })

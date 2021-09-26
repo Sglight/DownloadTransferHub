@@ -1,78 +1,110 @@
-<!doctype html>
+<!DOCTYPE html>
 <html class="no-js" lang="zh-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <title>下载中转 - 海洋空氣</title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<head>
-  <meta charset="utf-8">
-  <title>下载中转 - 海洋空氣</title>
-  <meta name="description" content="">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="manifest" href="site.webmanifest" />
+    <link rel="apple-touch-icon" href="icon.png" />
 
-  <link rel="manifest" href="site.webmanifest">
-  <link rel="apple-touch-icon" href="icon.png">
-  <!-- Place favicon.ico in the root directory -->
+    <link rel="stylesheet" href="css/normalize.css" />
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="css/customs.css" />
 
-  <link rel="stylesheet" href="css/normalize.css">
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/customs.css">
+    <meta name="theme-color" content="#1976D2" />
+  </head>
 
-  <meta name="theme-color" content="#1976D2">
-</head>
-
-<body>
-  <div class="container">
-    <div class="container-main">
-      <a href="https://github.com/Sglight/DownloadTransferHub" target="_blank"><img class="title"
-          srcset="src/title2.png 1400w, src/title.png 800w" src="src/title2.png"></a>
-      <div class="nav">
-        <a class="nav-item" id="tab-parse">解析</a>
-        <a class="nav-item" id="tab-upload">上传</a>
-        <a class="nav-item" id="tab-search">查询</a>
-      </div>
-      <div class="indicator-father">
-        <div id="indicator"></div>
-      </div>
-      <form id="form">
-        <label>
-          <input type="text" placeholder="需要下载的文件链接" id="inputFile" autocomplete="off">
-          <input type="file" id="uploadFile" name="uploadFile" hidden="hidden">
-          <input type="text" placeholder="密令" id="secretKey" maxlength="12">
-          <input type="text" placeholder="备注" id="remarks" autocomplete="off">
-          <input type="text" id="mode" hidden="hidden" value="parse">
-        </label>
-        <input type="button" id="trident" value="解析">
-      </form>
-      <table id="parse-result-table" hidden="hidden">
-        <tr>
-          <th>文件</th>
-          <th>MD5</th>
-          <th>密令</th>
-          <th>备注</th>
-          <th>操作</th>
-        </tr>
-        <!-- JS 插入数据位置 -->
-      </table>
-      <table id="search-result-table" hidden="hidden">
-        <tr>
-          <th>文件</th>
-          <th>MD5</th>
-          <th>密令</th>
-          <th>备注</th>
-          <th>操作</th>
-        </tr>
-        <!-- JS 插入数据位置 -->
-      </table>
-      <div class="container-footer">
-        <a class="footer-text">2020 - 2021</a>
-        <a href="mailto:qhy123666@hotmail.com" class="footer-text">Email: qhy123666@hotmail.com</a>
-        <a class="footer-text">Powered by 海洋空氣</a>
+  <body>
+    <div class="container">
+      <div class="container-main">
+        <img
+          class="title"
+          srcset="src/title2.png 1400w, src/title.png 800w"
+          src="src/title2.png"
+        />
+        <div class="nav">
+          <a class="nav-item" id="tab-parse" href="#parse">解析</a>
+          <a class="nav-item" id="tab-upload" href="#upload">上传</a>
+          <a class="nav-item" id="tab-search" href="#search">查询</a>
+        </div>
+        <div id="form">
+          <input type="hidden" id="parse" />
+          <input type="hidden" id="upload" />
+          <input type="hidden" id="search" />
+          <input
+            type="text"
+            placeholder="需要下载的文件链接"
+            id="inputFile"
+            autocomplete="off"
+            class="input-parse"
+          />
+          <input
+            type="file"
+            id="uploadFile"
+            name="uploadFile"
+            class="input-upload"
+          />
+          <input
+            type="text"
+            placeholder="密令"
+            id="secretKey"
+            maxlength="12"
+            class="input-parse input-upload input-search"
+          />
+          <input
+            type="text"
+            placeholder="备注"
+            id="remarks"
+            autocomplete="off"
+            class="input-parse input-upload"
+          />
+          <input type="text" id="mode" hidden="hidden" value="parse" />
+          <button
+            id="trident"
+            class="input-parse input-upload input-search"
+          ></button>
+        </div>
+        <table id="parse-result-table" hidden="hidden">
+          <tr>
+            <th>文件</th>
+            <th>MD5</th>
+            <th>密令</th>
+            <th>备注</th>
+            <th>操作</th>
+          </tr>
+          <!-- JS 插入数据位置 -->
+        </table>
+        <table id="search-result-table" hidden="hidden">
+          <tr>
+            <th>文件</th>
+            <th>MD5</th>
+            <th>密令</th>
+            <th>备注</th>
+            <th>操作</th>
+          </tr>
+          <!-- JS 插入数据位置 -->
+        </table>
+        <div class="container-footer">
+          <a
+            class="footer-text"
+            href="https://github.com/Sglight/DownloadTransferHub"
+            target="_blank"
+            >GitHub Link</a
+          >
+          <a class="footer-text">2020 - 2021</a>
+          <a href="mailto:qhy123666@hotmail.com" class="footer-text"
+            >Email: qhy123666@hotmail.com</a
+          >
+          <a class="footer-text">Powered by 海洋空氣</a>
+        </div>
       </div>
     </div>
-  </div>
 
-  <script src="js/vendor/modernizr-3.11.2.min.js"></script>
-  <script src="js/plugins.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/function.js"></script>
-</body>
-
+    <script src="js/vendor/modernizr-3.11.2.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/function.js"></script>
+  </body>
 </html>
