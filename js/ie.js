@@ -1,35 +1,34 @@
 "use strict"
-const DOMAIN = "https://soar.l4d2lk.cn"
-// const DOMAIN = 'http://localhost:8001'
+var DOMAIN = "https://soar.l4d2lk.cn"
 
 function doSearch() {
-  let secretKey = encodeURIComponent(
+  var secretKey = encodeURIComponent(
     document.getElementById("secretKey").value
   )
   secretKey ? 1 : (secretKey = "tmp")
 
-  const xhr = new XMLHttpRequest()
-  let requestUrl = DOMAIN + "/search?secretkey=" + secretKey
+  var xhr = new XMLHttpRequest()
+  var requestUrl = DOMAIN + "/search?secretkey=" + secretKey
   xhr.open("POST", requestUrl)
   xhr.send()
 
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
-      let table = document.getElementById("search-result-table")
-      createResultTableIterate(table, JSON.parse(xhr.response))
+      var table = document.getElementById("search-result-table")
+      createResultTableIterate(table, strToJson(xhr.responseText))
     }
   }
 }
 
 function createResultTable(table, responseJSON) {
-  let rowLength = table.rows.length
-  let tableRow = table.insertRow(rowLength)
+  var rowLength = table.rows.length
+  var tableRow = table.insertRow(rowLength)
   tableRow.setAttribute("id", "fid-" + responseJSON.FID)
 
-  let fileNameCell = tableRow.insertCell(0)
-  let hashCell = tableRow.insertCell(1)
-  let secretKeyCell = tableRow.insertCell(2)
-  let remarksCell = tableRow.insertCell(3)
+  var fileNameCell = tableRow.insertCell(0)
+  var hashCell = tableRow.insertCell(1)
+  var secretKeyCell = tableRow.insertCell(2)
+  var remarksCell = tableRow.insertCell(3)
 
   fillRowCell(
     fileNameCell,
@@ -42,7 +41,7 @@ function createResultTable(table, responseJSON) {
 }
 
 function fillRowCell(cell, href, text) {
-  let elem = document.createElement("a")
+  var elem = document.createElement("a")
   if (href) {
     elem.href = href
     elem.title = "点击下载"
@@ -53,12 +52,12 @@ function fillRowCell(cell, href, text) {
     elem.title = "点击复制"
   }
   cell.appendChild(elem)
-  let txt = document.createTextNode(text)
+  var txt = document.createTextNode(text)
   elem.appendChild(txt)
 }
 
 function createResultTableIterate(table, responseJSON) {
-  let rowLength = table.rows.length
+  var rowLength = table.rows.length
 
   // 清空表格
   while (rowLength > 1) {
@@ -66,8 +65,13 @@ function createResultTableIterate(table, responseJSON) {
     rowLength--
   }
 
-  for (let item in responseJSON) {
+  for (var item in responseJSON) {
     createResultTable(table, responseJSON[item])
     rowLength++
   }
 }
+
+function strToJson(str){ 
+  var json = (new Function("return " + str))()
+  return json
+} 

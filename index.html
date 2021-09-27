@@ -14,6 +14,21 @@
     <link rel="stylesheet" href="css/customs.css" />
 
     <meta name="theme-color" content="#1976D2" />
+
+    <script>
+      function isIE() {
+        if (
+          window.navigator.userAgent.indexOf("MSIE") >= 1 ||
+          window.navigator.userAgent.indexOf("Trident") >= 1
+        )
+          return true
+        else return false
+      }
+      
+      if (isIE()) {
+        window.location.href = "ie.html"
+      }
+    </script>
   </head>
 
   <body>
