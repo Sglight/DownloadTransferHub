@@ -1,11 +1,11 @@
 "use strict"
 
 const pg = require('pg')
-require("dotenv").config()
+require('dotenv').config()
 
 const fs = require('fs')
 const path = require('path')
-const Aria2 = require("aria2")
+const download = require('download')
 
 const express = require('express')
 const { request, response } = require('express')
@@ -14,12 +14,14 @@ const exp = express()
 
 const md5File = require('md5-file')
 
-exp.use(fileUpload({
-    limits: { fileSize: 200 * 1024 * 1024 }
-}))
+exp.use(
+    fileUpload({
+        limits: { fileSize: 200 * 1024 * 1024 },
+    })
+)
 
-const DOMAIN = 'https://soar.l4d2lk.cn'
-// const DOMAIN = '*'
+// const DOMAIN = 'https://soar.l4d2lk.cn'
+const DOMAIN = '*'
 const WORKPATH = path.resolve(__dirname, '..')
 
 const pgConfig = {
@@ -33,28 +35,26 @@ const pgConfig = {
     ssl: false
 }
 
-const aria2Config = {
-    host: 'localhost',
-    port: 6800,
-    secure: false,
-    secret: process.env.aria2secret,
-    path: '/jsonrpc'
-}
-
 exp.post('/parse', async (request, response) => {
     response.setHeader('Access-Control-Allow-Origin', DOMAIN)
     try {
         let inputFileLink = request.query.inputfile
-        let inputFileName = inputFileLink.substring(inputFileLink.lastIndexOf('/') + 1)
+        let inputFileName = inputFileLink.substring(
+            inputFileLink.lastIndexOf('/') + 1
+        )
         let secretKey = request.query.secretkey
         let remarks = request.query.remarks
-        let ip = request.headers['x-forwarded-for'] || req.socket.remoteAddress
+        let ip = request.headers['x-forwarded-for'] || request.socket.remoteAddress
         let ua = request.headers['user-agent']
 
-        let fileFloder = `${WORKPATH}/UserFiles/${secretKey}`
+        let UserFileFloder = `${WORKPATH}/UserFiles`
+        let fileFloder = `${UserFileFloder}/${secretKey}`
         let fileFullPath = `${fileFloder}/${inputFileName}`
 
         // 检查密令目录是否存在
+        if (!fs.existsSync(UserFileFloder)) {
+            fs.mkdirSync(UserFileFloder)
+        }
         if (!fs.existsSync(fileFloder)) {
             fs.mkdirSync(fileFloder)
         }
@@ -70,52 +70,43 @@ exp.post('/parse', async (request, response) => {
             i++
         }
 
-        let aria2 = new Aria2(aria2Config)
-        await aria2.open()
-        await aria2.call('addUri', [inputFileLink], { dir: fileFloder })
-        aria2.on("onDownloadComplete", async () => {
-            aria2.close()
+        // HTTP Download
+        fs.writeFileSync(fileFullPath, await download(inputFileLink))
 
-            let hash = await md5File(decodeURIComponent(fileFullPath))
+        let hash = await md5File(decodeURIComponent(fileFullPath))
 
-            // 更新数据库
-            let SQLQuery = `
-                INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks", "originlink", "ip", "ua") 
-                VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}', '${inputFileLink}', '${ip}', '${ua}') 
-                RETURNING "FID"
-            `
-            const client = new pg.Client(pgConfig)
-            client.connect((err) => {
-                if (err) {
-                    console.error(err)
-                    response.status(400).send(err)
-                }
-            })
-
-            let res = await client.query(SQLQuery)
-            let FID = res.rows[0].FID
-            client.end(err => {
-                if (err) {
-                    console.error(err)
-                    response.status(400).send(err)
-                }
-            })
-
-            let responseData = JSON.stringify({
-                "FileName": alterFileName,
-                "Hash": hash,
-                "SecretKey": secretKey,
-                "remarks": remarks,
-                "FID": FID
-            })
-            response.send(responseData)
+        // 更新数据库
+        let SQLQuery = `
+            INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks", "originlink", "ip", "ua") 
+            VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}', '${inputFileLink}', '${ip}', '${ua}') 
+            RETURNING "FID"
+        `
+        const client = new pg.Client(pgConfig)
+        client.connect((err) => {
+            if (err) {
+                console.error(err)
+                response.status(400).send(err)
+            }
         })
-        aria2.on("onDownloadError", () => {1
-            aria2.close()
-            response.status(500).send('Download Error.')
+
+        let res = await client.query(SQLQuery)
+        let FID = res.rows[0].FID
+        client.end((err) => {
+            if (err) {
+                console.error(err)
+                response.status(400).send(err)
+            }
         })
-    }
-    catch (err) {
+
+        let responseData = JSON.stringify({
+            FileName: alterFileName,
+            Hash: hash,
+            SecretKey: secretKey,
+            remarks: remarks,
+            FID: FID
+        })
+        response.send(responseData)
+    } catch (err) {
         console.error(err)
         response.status(400).send(err)
     }
@@ -138,7 +129,7 @@ exp.post('/upload', async (request, response) => {
             RETURNING "FID"
         `
         const client = new pg.Client(pgConfig)
-        client.connect(err => {
+        client.connect((err) => {
             if (err) {
                 console.error(err)
                 response.status(400).send(err)
@@ -147,7 +138,7 @@ exp.post('/upload', async (request, response) => {
 
         let res = await client.query(SQLQuery)
         let FID = res.rows[0].FID
-        client.end(err => {
+        client.end((err) => {
             if (err) {
                 console.error(err)
                 response.status(400).send(err)
@@ -176,15 +167,14 @@ exp.post('/upload', async (request, response) => {
         file.mv(fileFullPath)
 
         let responseData = JSON.stringify({
-            "FileName": fileName,
-            "Hash": hash,
-            "SecretKey": secretKey,
-            "remarks": remarks,
-            "FID": FID
+            FileName: fileName,
+            Hash: hash,
+            SecretKey: secretKey,
+            remarks: remarks,
+            FID: FID
         })
         response.send(responseData)
-    }
-    catch (err) {
+    } catch (err) {
         console.error(err)
         response.status(400).send(err)
     }
@@ -200,7 +190,7 @@ exp.post('/search', async (request, response) => {
 
         const client = new pg.Client(pgConfig)
 
-        client.connect(err => {
+        client.connect((err) => {
             if (err) {
                 console.error(err)
                 response.status(400).send(err)
@@ -209,14 +199,13 @@ exp.post('/search', async (request, response) => {
 
         let res = await client.query(SQLQuery)
         response.send(res.rows)
-        client.end(err => {
+        client.end((err) => {
             if (err) {
                 console.error(err)
                 response.status(400).send(err)
             }
         })
-    }
-    catch (err) {
+    } catch (err) {
         console.error(err)
         response.status(400).send(err)
     }
@@ -228,11 +217,11 @@ exp.post('/delete', async (request, response) => {
         deleteRowDB(request.query.FID)
 
         let fileFullPath = `${WORKPATH}/UserFiles/${request.query.secretkey}/${request.query.filename}`
-        if (fs.existsSync(fileFullPath))
+        if (fs.existsSync(fileFullPath)) {
             fs.rmSync(fileFullPath)
-        response.send('Deleted.')
-    }
-    catch (err) {
+        }
+        response.send("Deleted.")
+    } catch (err) {
         console.error(err)
         response.status(400).send(err)
     }
@@ -263,7 +252,7 @@ exp.post('/changekey', async (request, response) => {
 
             const client = new pg.Client(pgConfig)
 
-            client.connect(err => {
+            client.connect((err) => {
                 if (err) {
                     console.error(err)
                     response.status(400).send(err)
@@ -288,7 +277,7 @@ exp.post('/changekey', async (request, response) => {
             } else { // Hash 重复，不处理
                 bExisted = true
             }
-            client.end(err => {
+            client.end((err) => {
                 if (err) {
                     console.error(err)
                     response.status(400).send(err)
@@ -307,7 +296,7 @@ exp.post('/changekey', async (request, response) => {
 
         const client = new pg.Client(pgConfig)
 
-        client.connect(err => {
+        client.connect((err) => {
             if (err) {
                 console.error(err)
                 response.status(400).send(err)
@@ -318,15 +307,14 @@ exp.post('/changekey', async (request, response) => {
         } else if (mode == 'add' && !bExisted) {
             await client.query(ADDQUERY)
         }
-        client.end(err => {
+        client.end((err) => {
             if (err) {
                 console.error(err)
                 response.status(400).send(err)
             }
         })
         response.send(`Secert Key Changed from ${oldKey} to ${newKey}`)
-    }
-    catch (err) {
+    } catch (err) {
         console.error(err)
         response.status(400).send(err)
     }
@@ -338,23 +326,28 @@ exp.post('/changeremarks', async (request, response) => {
     
         let newRemarks = request.query.newremarks
         let SQLQuery = `UPDATE "UserFiles" SET "remarks"='${newRemarks}' WHERE "FID"='${request.query.FID}'`
-    
+
         const client = new pg.Client(pgConfig)
-    
-        client.connect(err => {
+
+        client.connect((err) => {
             if (err) console.log(err)
         })
         await client.query(SQLQuery)
-        client.end(err => {
+        client.end((err) => {
             if (err) console.log(err)
         })
-    
+
         response.send(`Remarks changed to ${newRemarks}.`)
-    }
-    catch (err) {
+    } catch (err) {
         console.error(err)
         response.status(400).send(err)
     }
+})
+
+// 解决上传监听跨域
+exp.options('/upload', async (request, response) => {
+    response.setHeader('Access-Control-Allow-Origin', DOMAIN)
+    response.status(200).send()
 })
 
 async function deleteRowDB(FID) {
@@ -362,22 +355,17 @@ async function deleteRowDB(FID) {
 
     const client = new pg.Client(pgConfig)
 
-    client.connect(err => {
+    client.connect((err) => {
         if (err) console.log(err)
     })
     await client.query(SQLQuery)
-    client.end(err => {
+    client.end((err) => {
         if (err) console.log(err)
     })
 }
 
-async function rename(fileName) {
+async function rename(fileName) { }
 
-}
+async function checkDuplicateMD5(md5) { }
 
-async function checkDuplicateMD5(md5) {
-
-}
-
-exp.listen(8001, () => {
-})
+exp.listen(8001, () => { })

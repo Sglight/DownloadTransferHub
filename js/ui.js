@@ -151,3 +151,33 @@ function createResultTableIterate(table, responseJSON) {
     rowLength++
   }
 }
+
+function flashEmptyInput(input) {
+  input.style.animation = "alert-glow 250ms ease-out 3"
+    setTimeout(() => {
+      input.style.animation = ""
+    }, 750)
+}
+
+function tridentOnProgress(e) {
+  let total = e.total
+  let loaded = e.loaded
+  let progress = loaded / total * 100
+  document.getElementById('trident').style.backgroundPositionX = `${progress}%`
+}
+
+function tridentOnLoadEnd(e) {
+  document.getElementById('trident').style.backgroundPositionX = '0'
+}
+
+function showPopupTips(text) {
+  let tips = document.querySelector('.popup-tips')
+  let tipsText = document.querySelector('.popup-tips-text')
+  let originTop = tips.style.top
+  tips.style.top = '5px'
+  tipsText.textContent = text
+  setTimeout(() => {
+    tips.style.top = originTop
+  }, 2500)
+
+}

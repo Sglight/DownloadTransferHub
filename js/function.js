@@ -1,21 +1,19 @@
 "use strict"
-const DOMAIN = "https://soar.l4d2lk.cn"
-// const DOMAIN = 'http://localhost:8001'
+// const DOMAIN = "https://soar.l4d2lk.cn"
+const DOMAIN = 'http://localhost:8001'
 
 function doParse() {
   let inputFile = document.getElementById("inputFile")
   let secretKey = encodeURIComponent(
     document.getElementById("secretKey").value
   )
-  secretKey ? 1 : (secretKey = "tmp")
+  secretKey ? 1 : (secretKey = "tmp") // set default value tmp
   let inputFileLink = encodeURIComponent(inputFile.value)
   let remarks = encodeURIComponent(document.getElementById("remarks").value)
 
-  if (!inputFileLink) {
-    inputFile.style.animation = "alert-glow 250ms ease-out 3"
-    setTimeout(() => {
-      inputFile.style.animation = ""
-    }, 750)
+  if (!inputFileLink) { // No Link, show a red border on input
+    flashEmptyInput(inputFile)
+    showPopupTips('下载链接为空')
     return
   }
   const xhr = new XMLHttpRequest()
@@ -39,15 +37,12 @@ function doParse() {
 
 function doUpload() {
   let uploadFile = document.getElementById("uploadFile")
-  if (!uploadFile.value) {
-    uploadFile.style.animation = "alert-glow 250ms ease-out 3"
-    setTimeout(() => {
-      uploadFile.style.animation = ""
-    }, 750)
+  if (!uploadFile.value) { // No File, show a red border on input
+    flashEmptyInput(uploadFile)
+    showPopupTips('文件为空')
     return
   }
 
-  uploadFile.style = ""
   let secretKey = encodeURIComponent(
     document.getElementById("secretKey").value
   )
@@ -55,12 +50,20 @@ function doUpload() {
   let remarks = encodeURIComponent(document.getElementById("remarks").value)
   let fileObj = document.getElementById("uploadFile").files[0]
 
+  // limit max file size
+  if (fileObj.size > 200 * 1024 * 1024) {
+    flashEmptyInput(uploadFile)
+    showPopupTips('文件大于 200 MB')
+  }
+
   let form = new FormData()
   form.append("file", fileObj)
 
   const xhr = new XMLHttpRequest()
   let requestUrl = `${DOMAIN}/upload?secretkey=${secretKey}&remarks=${remarks}`
   xhr.open("POST", requestUrl)
+  xhr.upload.onprogress = tridentOnProgress
+  xhr.upload.onloadend = tridentOnLoadEnd // restore trident logo position-x
   xhr.send(form)
 
   disableElement("trident", true)
@@ -183,5 +186,5 @@ function copyToClip(content, message) {
 }
 
 function disableElement(id, boolean) {
-    document.getElementById(id).disabled = boolean
+  document.getElementById(id).disabled = boolean
 }

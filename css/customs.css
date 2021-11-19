@@ -173,7 +173,7 @@ button:hover {
   background-repeat: no-repeat;
   background-position-y: 1px;
   border: 1px solid gray;
-  animation: back-scroll-animation 10s infinite ease-in-out;
+  transition: background-position-x 0.05s ease-in-out;
 }
 
 @keyframes back-scroll-animation {
@@ -239,6 +239,27 @@ td a {
 
 .change-remarks-button {
   background: url("../src/chat-left-dots-fill.svg") 7px 8px no-repeat;
+}
+
+.popup-tips {
+  width: 60%;
+  height: 50px;
+  background-color: #ff5252;
+  opacity: 80%;
+  border-radius: 10px;
+  box-shadow: 0px 6px 2px -1px rgba(211, 47, 47, 0.3);
+  position: fixed;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  align-self: center;
+  top: -100px;
+  transition: top 0.5s ease-in-out;
+}
+
+.popup-tips-text {
+  flex: 1;
+  text-align: center;
 }
 
 @keyframes alert-glow {
