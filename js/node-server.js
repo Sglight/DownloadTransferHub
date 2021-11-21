@@ -20,8 +20,8 @@ exp.use(
     })
 )
 
-// const DOMAIN = 'https://soar.l4d2lk.cn'
-const DOMAIN = '*'
+const DOMAIN = 'https://soar.l4d2lk.cn'
+// const DOMAIN = '*'
 const WORKPATH = path.resolve(__dirname, '..')
 
 const pgConfig = {
