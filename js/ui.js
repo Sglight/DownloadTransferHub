@@ -20,9 +20,6 @@ function prepareClicks() {
     !document.getElementById
   )
     return false
-  document.getElementById("tab-parse").onclick = goParse
-  document.getElementById("tab-upload").onclick = goUpload
-  document.getElementById("tab-search").onclick = goSearch
   document.getElementById("trident").onclick = doTrident
   document.getElementById("form").onkeydown = (event) => { // 监听 Enter 按下
     if (event.defaultPrevented) {
