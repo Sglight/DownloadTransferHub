@@ -1,5 +1,5 @@
 "use strict"
-addLoadEvent(prepareClicks)
+addLoadEvent(prepareOnLoad)
 
 function addLoadEvent(func) {
   let oldonload = window.onload
@@ -13,7 +13,7 @@ function addLoadEvent(func) {
   }
 }
 
-function prepareClicks() {
+function prepareOnLoad() {
   if (
     !document.createElement ||
     !document.createTextNode ||
@@ -29,9 +29,14 @@ function prepareClicks() {
       doTrident()
     }
   }
+
   // 根据 Hash 链接跳转到模块
   window.onhashchange = goTrident
   goTrident()
+
+  // footer 年份
+  let d = new Date()
+  document.querySelector('#year-from-to').innerHTML += d.getFullYear()
 }
 
 function goParse() {
@@ -58,6 +63,7 @@ function goSearch() {
   hideElement("parse-result-table", true)
 }
 
+// 根据 Hash 链接跳转到模块
 function goTrident() {
   switch (location.hash) {
     case "#parse":
@@ -166,6 +172,7 @@ function createResultTableIterate(table, responseJSON) {
   }
 }
 
+// empty link / file flash 空链接 / 文件闪光
 function flashEmptyInput(input) {
   input.style.animation = "alert-glow 250ms ease-out 3"
     setTimeout(() => {
@@ -173,6 +180,7 @@ function flashEmptyInput(input) {
     }, 750)
 }
 
+// progress bar 进度条
 function tridentOnProgress(e) {
   let total = e.total
   let loaded = e.loaded
@@ -184,14 +192,28 @@ function tridentOnLoadEnd(e) {
   document.getElementById('trident').style.backgroundPositionX = '0'
 }
 
-function showPopupTips(text) {
-  let tips = document.querySelector('.popup-tips')
-  let tipsText = document.querySelector('.popup-tips-text')
-  let originTop = tips.style.top
-  tips.style.top = '5px'
-  tipsText.textContent = text
-  setTimeout(() => {
-    tips.style.top = originTop
-  }, 2500)
+// popup tips 弹框提示
+let popupTimeoutID
 
+function showPopupTips(text) {
+  let tips = document.getElementById('popup-tips')
+  let tipsText = document.getElementById('popup-tips-text')
+  let originTop = '-100px'
+  let currentTop = tips.style.top
+  let alterTop = '5px'
+
+  // 已经弹出
+  if (currentTop === alterTop) {
+    clearTimeout(popupTimeoutID)
+  }
+
+  // 更改弹框坐标与文字
+  tips.style.top = alterTop
+  tipsText.textContent = text
+
+  // 定时恢复隐藏
+  popupTimeoutID = setTimeout(() => {
+    tips.style.top = originTop
+    popupTimeoutID = null
+  }, 2500)
 }
