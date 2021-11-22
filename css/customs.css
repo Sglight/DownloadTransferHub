@@ -241,7 +241,7 @@ td a {
   background: url("../src/chat-left-dots-fill.svg") 7px 8px no-repeat;
 }
 
-.popup-tips {
+#popup-tips {
   width: 60%;
   height: 50px;
   background-color: #ff5252;
@@ -257,7 +257,7 @@ td a {
   transition: top 0.5s ease-in-out;
 }
 
-.popup-tips-text {
+#popup-tips-text {
   flex: 1;
   text-align: center;
 }
