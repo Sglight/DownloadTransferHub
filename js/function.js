@@ -13,7 +13,7 @@ function doParse() {
 
   if (!inputFileLink) { // No Link, show a red border on input
     flashEmptyInput(inputFile)
-    showPopupTips('下载链接为空')
+    showPopupTips('下载链接为空', 'red')
     return
   }
   const xhr = new XMLHttpRequest()
@@ -39,7 +39,7 @@ function doUpload() {
   let uploadFile = document.getElementById("uploadFile")
   if (!uploadFile.value) { // No File, show a red border on input
     flashEmptyInput(uploadFile)
-    showPopupTips('文件为空')
+    showPopupTips('文件为空', 'red')
     return
   }
 
@@ -53,7 +53,7 @@ function doUpload() {
   // limit max file size
   if (fileObj.size > 200 * 1024 * 1024) {
     flashEmptyInput(uploadFile)
-    showPopupTips('文件大于 200 MB')
+    showPopupTips('文件大于 200 MB', 'red')
   }
 
   let form = new FormData()
@@ -173,16 +173,6 @@ function doTrident() {
       doSearch()
       break
   }
-}
-
-function copyToClip(content, message) {
-  let aux = document.createElement("input")
-  aux.setAttribute("value", content)
-  document.body.appendChild(aux)
-  aux.select()
-  document.execCommand("copy")
-  document.body.removeChild(aux)
-  message ? true : (message = "复制成功")
 }
 
 function disableElement(id, boolean) {

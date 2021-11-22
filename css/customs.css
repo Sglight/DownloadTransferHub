@@ -244,10 +244,8 @@ td a {
 #popup-tips {
   width: 60%;
   height: 50px;
-  background-color: #ff5252;
   opacity: 80%;
   border-radius: 10px;
-  box-shadow: 0px 6px 2px -1px rgba(211, 47, 47, 0.3);
   position: fixed;
   z-index: 99;
   display: flex;

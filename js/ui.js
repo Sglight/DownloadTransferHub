@@ -132,7 +132,8 @@ function fillRowCell(cell, href, text) {
     elem.title = "点击下载"
   } else {
     elem.onclick = () => {
-      copyToClip(text)
+      navigator.clipboard.writeText(text)
+      showPopupTips("复制成功", 'green')
     }
     elem.title = "点击复制"
   }
@@ -195,21 +196,35 @@ function tridentOnLoadEnd(e) {
 // popup tips 弹框提示
 let popupTimeoutID
 
-function showPopupTips(text) {
+function showPopupTips(text, color) {
   let tips = document.getElementById('popup-tips')
   let tipsText = document.getElementById('popup-tips-text')
   let originTop = '-100px'
   let currentTop = tips.style.top
   let alterTop = '5px'
+  let bgColor
+  let boxShadow
 
   // 已经弹出
   if (currentTop === alterTop) {
     clearTimeout(popupTimeoutID)
   }
 
-  // 更改弹框坐标与文字
+  // 更改弹框坐标、文字、背景颜色
   tips.style.top = alterTop
   tipsText.textContent = text
+  switch(color) {
+    case 'red':
+      bgColor = '#ff5252'
+      boxShadow = '0px 6px 2px -1px rgba(211, 47, 47, 0.3)'
+      break
+    case 'green':
+      bgColor = '#bee7cd'
+      boxShadow = '0px 6px 2px -1px rgba(152, 184, 164, 0.3)'
+      break
+  }
+  tips.style.backgroundColor = bgColor
+  tips.style.boxShadow = boxShadow
 
   // 定时恢复隐藏
   popupTimeoutID = setTimeout(() => {
