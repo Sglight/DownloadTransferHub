@@ -24,7 +24,7 @@ function prepareClicks() {
   document.getElementById("tab-upload").onclick = goUpload
   document.getElementById("tab-search").onclick = goSearch
   document.getElementById("trident").onclick = doTrident
-  document.getElementById("form").onkeydown = (event) => {
+  document.getElementById("form").onkeydown = (event) => { // 监听 Enter 按下
     if (event.defaultPrevented) {
       return // 如果事件已经在进行中，则不做任何事。
     }
@@ -32,6 +32,9 @@ function prepareClicks() {
       doTrident()
     }
   }
+  // 根据 Hash 链接跳转到模块
+  window.onhashchange = goTrident
+  goTrident()
 }
 
 function goParse() {
@@ -56,6 +59,20 @@ function goSearch() {
     ? hideElement("search-result-table", false)
     : hideElement("search-result-table", true)
   hideElement("parse-result-table", true)
+}
+
+function goTrident() {
+  switch (location.hash) {
+    case "#parse":
+      goParse()
+      break
+    case "#upload":
+      goUpload()
+      break
+    case "#search":
+      goSearch()
+      break
+  }
 }
 
 function hideElement(id, boolean) {
