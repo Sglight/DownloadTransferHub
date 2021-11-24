@@ -114,7 +114,6 @@ function createResultTable(table, responseJSON) {
   fillOperateCell(operateCell, "change-key-button", "更改密令", doChangeKey, [
     responseJSON.FID,
     responseJSON.FileName,
-    responseJSON.SecretKey,
   ])
   fillOperateCell(
     operateCell,
@@ -185,8 +184,12 @@ function flashEmptyInput(input) {
 function tridentOnProgress(e) {
   let total = e.total
   let loaded = e.loaded
-  let progress = loaded / total * 100
-  document.getElementById('trident').style.backgroundPositionX = `${progress}%`
+  let progress = loaded / total * 100 + "%"
+  setTridentProgress(progress)
+}
+
+function setTridentProgress(progress) {
+  document.getElementById('trident').style.backgroundPositionX = `${progress}`
 }
 
 function tridentOnLoadEnd(e) {

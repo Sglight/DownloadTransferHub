@@ -1,6 +1,6 @@
 "use strict"
-const DOMAIN = "https://soar.l4d2lk.cn"
-// const DOMAIN = 'http://localhost:8001'
+// const DOMAIN = "https://soar.l4d2lk.cn"
+const DOMAIN = 'http://localhost:8001'
 
 function doParse() {
   let inputFile = document.getElementById("inputFile")
@@ -16,20 +16,44 @@ function doParse() {
     showPopupTips('下载链接为空', 'red')
     return
   }
-  const xhr = new XMLHttpRequest()
-  let requestUrl = `${DOMAIN}/parse?inputfile=${inputFileLink}&secretkey=${secretKey}&remarks=${remarks}`
-  xhr.open("POST", requestUrl)
-  xhr.send()
-
-  disableElement("trident", true)
-
-  xhr.onreadystatechange = () => {
-    if (xhr.readyState === 4) {
+  if ('EventSource' in window) { // 支持 SSE
+    let requestUrl = `${DOMAIN}/parsesse?inputfile=${inputFileLink}&secretkey=${secretKey}&remarks=${remarks}`
+    const sse = new EventSource(requestUrl)
+    disableElement("trident", true)
+    sse.onerror = (err) => {
+      showPopupTips('出现了神秘错误', 'red')
+      console.log(err)
+      sse.close()
       disableElement("trident", false)
-      if (xhr.status >= 200 && xhr.status < 300) {
+    }
+    sse.onmessage = (e) => {
+      if ( e.data.charAt(e.data.length - 1) == '%' ) { // 进度
+        setTridentProgress(e.data)
+      } else { // 下载完毕
+        sse.close()
+        disableElement("trident", false)
         hideElement("parse-result-table", false)
         let table = document.getElementById("parse-result-table")
-        createResultTable(table, JSON.parse(xhr.response))
+        createResultTable(table, JSON.parse(e.data))
+        setTridentProgress(0)
+      }
+    }
+  } else { // 不支持 SSE，使用 XHR
+    const xhr = new XMLHttpRequest()
+    let requestUrl = `${DOMAIN}/parse?inputfile=${inputFileLink}&secretkey=${secretKey}&remarks=${remarks}`
+    xhr.open("POST", requestUrl)
+    xhr.send()
+  
+    disableElement("trident", true)
+  
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === 4) {
+        disableElement("trident", false)
+        if (xhr.status >= 200 && xhr.status < 300) {
+          hideElement("parse-result-table", false)
+          let table = document.getElementById("parse-result-table")
+          createResultTable(table, JSON.parse(xhr.response))
+        }
       }
     }
   }
@@ -51,9 +75,9 @@ function doUpload() {
   let fileObj = document.getElementById("uploadFile").files[0]
 
   // limit max file size
-  if (fileObj.size > 200 * 1024 * 1024) {
+  if (fileObj.size > 300 * 1024 * 1024) {
     flashEmptyInput(uploadFile)
-    showPopupTips('文件大于 200 MB', 'red')
+    showPopupTips('文件大于 300 MB', 'red')
   }
 
   let form = new FormData()
@@ -114,12 +138,16 @@ function doDelete(FID, fileName, secretKey) {
   }
 }
 
-function doChangeKey(FID, fileName, secretKey) {
+function doChangeKey(FID, fileName) {
   // 参数：FID, oldkey, newkey, mode
   let row = document.getElementById(`fid-${FID}`)
   let oldKey = row.childNodes[2].childNodes[0].text
   let newKey = prompt(`输入新的密令\n当前密令为 '${oldKey}'`)
-  if (newKey === null) return
+  newKey ? 1 : (newKey = "tmp") // set default value tmp
+  if (oldKey === newKey) { // 新旧密令相同
+    showPopupTips("新旧密令相同", 'red')
+    return
+  }
 
   let select = confirm(
     `可以 '更改' 或者 '添加'\n点击 '确定' 更改为 '${newKey}'\n点击 '取消' 增加密令 '${newKey}'`
