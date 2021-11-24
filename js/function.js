@@ -1,6 +1,6 @@
 "use strict"
-// const DOMAIN = "https://soar.l4d2lk.cn"
-const DOMAIN = 'http://localhost:8001'
+const DOMAIN = "https://soar.l4d2lk.cn"
+// const DOMAIN = 'http://localhost:8001'
 
 function doParse() {
   let inputFile = document.getElementById("inputFile")
@@ -81,7 +81,7 @@ function doUpload() {
   }
 
   let form = new FormData()
-  form.append("file", fileObj)
+  form.append("file", fileObj) // "file" 对应 multer 中的 fieldName
 
   const xhr = new XMLHttpRequest()
   let requestUrl = `${DOMAIN}/upload?secretkey=${secretKey}&remarks=${remarks}`

@@ -11,13 +11,15 @@ import fetch from "node-fetch"
 import progressStream from 'progress-stream'
 
 import express from 'express'
+import multer from 'multer'
 const exp = express()
 
 import md5File from 'md5-file'
 
-// const DOMAIN = 'https://soar.l4d2lk.cn'
-const DOMAIN = '*'
+const DOMAIN = 'https://soar.l4d2lk.cn'
+// const DOMAIN = '*'
 const WORKPATH = path.resolve(fileURLToPath(import.meta.url), '../..')
+const upload = multer({ dest: `${WORKPATH}/UserFiles/tmp/` }) // 上传的临时文件目录
 
 const pgConfig = {
   host: process.env.hksrvip,
@@ -165,16 +167,34 @@ exp.get('/parsesse', async (req, res) => {
   }
 })
 
-exp.post('/upload', async (req, res) => {
+exp.post('/upload', upload.single('file'), async (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', DOMAIN)
   try {
-    let file = req.files.file
-    let fileName = file.name
-    let hash = file.md5
+    let file = req.file
+    let fileName = file.originalname
+    let tmpPath = file.path
     let secretKey = req.query.secretkey
     let remarks = req.query.remarks
     let ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
     let ua = req.headers['user-agent']
+    let UserFileFloder = `${WORKPATH}/UserFiles`
+    let fileFloder = `${UserFileFloder}/${secretKey}`
+    let fileFullPath = `${fileFloder}/${fileName}`
+
+    // 检查密令目录是否存在
+    checkFloderExists(UserFileFloder)
+    checkFloderExists(fileFloder)
+
+    // 检查是否已存在相同文件
+    let alterFileName = await renameFile(fileName, fileFloder, fileFullPath)
+    fileFullPath = `${fileFloder}/${alterFileName}`
+    fs.rename(tmpPath, fileFullPath, (err) => {
+      if (err) {
+        console.log(err)
+      }
+    })
+
+    let hash = await md5File(decodeURIComponent(fileFullPath))
 
     let SQLQuery = `
             INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks", "originlink", "ip", "ua") 
@@ -197,17 +217,6 @@ exp.post('/upload', async (req, res) => {
         res.status(500).send(err)
       }
     })
-
-    let fileFloder = `${WORKPATH}/UserFiles/${secretKey}`
-    let fileFullPath = `${fileFloder}/${fileName}`
-
-    // 检查密令目录是否存在
-    checkFloderExists(UserFileFloder)
-    checkFloderExists(fileFloder)
-
-    // 检查是否已存在相同文件
-    fileName = alterFileName
-    file.mv(fileFullPath)
 
     let resData = JSON.stringify({
       FileName: fileName,
