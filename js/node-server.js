@@ -16,8 +16,8 @@ const exp = express()
 
 import md5File from 'md5-file'
 
-// const DOMAIN = 'https://soar.l4d2lk.cn'
-const DOMAIN = '*'
+const DOMAIN = 'https://soar.l4d2lk.cn'
+// const DOMAIN = '*'
 const WORKPATH = path.resolve(fileURLToPath(import.meta.url), '../..')
 const upload = multer({ dest: `${WORKPATH}/UserFiles/tmp/` }) // 上传的临时文件目录
 

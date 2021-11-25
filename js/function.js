@@ -1,6 +1,6 @@
 "use strict"
-// const DOMAIN = "https://soar.l4d2lk.cn"
-const DOMAIN = 'http://localhost:8001'
+const DOMAIN = "https://soar.l4d2lk.cn"
+// const DOMAIN = 'http://localhost:8001'
 
 function doParse() {
   let inputFile = document.getElementById("inputFile")
@@ -28,7 +28,6 @@ function doParse() {
     }
     sse.onmessage = (e) => {
       if ( e.lastEventId === 'progress' ) { // 进度
-        console.log(e.data)
         setTridentProgress(e.data)
       } else if (e.lastEventId === 'result') { // 下载完毕
         sse.close()
