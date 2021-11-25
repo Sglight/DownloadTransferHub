@@ -16,8 +16,8 @@ const exp = express()
 
 import md5File from 'md5-file'
 
-const DOMAIN = 'https://soar.l4d2lk.cn'
-// const DOMAIN = '*'
+// const DOMAIN = 'https://soar.l4d2lk.cn'
+const DOMAIN = '*'
 const WORKPATH = path.resolve(fileURLToPath(import.meta.url), '../..')
 const upload = multer({ dest: `${WORKPATH}/UserFiles/tmp/` }) // 上传的临时文件目录
 
@@ -140,7 +140,7 @@ exp.get('/parsesse', async (req, res) => {
     client.connect((err) => {
       if (err) {
         console.error(err)
-        res.status(500).send(err)
+        res.status(500).send('数据库连接失败，请联系网站管理员处理')
       }
     })
 
@@ -149,7 +149,7 @@ exp.get('/parsesse', async (req, res) => {
     client.end((err) => {
       if (err) {
         console.error(err)
-        res.status(500).send(err)
+        res.status(500).send('数据库操作失败，请联系网站管理员处理')
       }
     })
 
@@ -160,10 +160,12 @@ exp.get('/parsesse', async (req, res) => {
       remarks: remarks,
       FID: FID
     })
+    res.write(`id: result\n`)
     res.write(`data: ${resData}\n\n`)
+    res.end()
   } catch (err) {
     console.error(err)
-    res.status(500).send(err)
+    res.status(500).send('发生神秘错误')
   }
 })
 
@@ -225,6 +227,7 @@ exp.post('/upload', upload.single('file'), async (req, res, next) => {
       remarks: remarks,
       FID: FID
     })
+    console.log(resData)
     res.send(resData)
   } catch (err) {
     console.error(err)
@@ -268,9 +271,8 @@ exp.post('/delete', async (req, res) => {
   try {
     // 删除数据行
     if (!deleteRowDB(req.query.FID)) {
-      // 即使数据库中不存在这条信息，也尝试删除文件
-      // 仅在服务端显示错误信息，不返回给客户端
-      // res.status(500).send()
+      // 删除失败
+      res.status(500).send('删除数据库行失败')
     }
 
     let fileFullPath = `${WORKPATH}/UserFiles/${req.query.secretkey}/${req.query.filename}`
@@ -278,7 +280,7 @@ exp.post('/delete', async (req, res) => {
     if (fs.existsSync(fileFullPath)) {
       fs.rmSync(fileFullPath)
     }
-    res.send()
+    res.send('deleted')
   } catch (err) {
     console.error(err)
     res.status(500).send(err)
@@ -469,25 +471,23 @@ function downloadFileResumption(fileURL, fileSavePath, sseRes) {
     }).then(res => {
       // 获取请求头中的文件大小数据
       let fsize = res.headers.get("content-length")
-      console.log(`文件大小: ${fsize}`)
       // 创建进度
       let str = progressStream({
         length: fsize,
-        time: 1000 /* ms */
+        time: 500 /* ms */
       })
       // 下载进度 
       str.on('progress', function (progressData) {
         // 不换行输出
         let percentage = Math.round(progressData.percentage) + '%'
-        console.log(percentage)
         if (sseRes) { // SSE
+          sseRes.write(`id: progress\n`)
           sseRes.write(`data: ${percentage}\n\n`)
         }
       })
       res.body.pipe(str).pipe(fileStream)
     }).catch(e => {
       // 自定义异常处理
-      console.log(e)
       reject(e)
     })
   })
