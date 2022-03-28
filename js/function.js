@@ -1,6 +1,6 @@
 "use strict"
-const DOMAIN = "https://soar.l4d2lk.cn"
-// const DOMAIN = 'http://localhost:8001'
+const DOMAIN = ['https://soar.l4d2lk.cn', 'https://soar.hykq.cc', 'http://localhost:8001']
+const ORIGIN = document.location.origin
 
 function doParse() {
   let inputFile = document.getElementById("inputFile")
@@ -17,7 +17,10 @@ function doParse() {
     return
   }
   if ('EventSource' in window) { // 支持 SSE
-    let requestUrl = `${DOMAIN}/parsesse?inputfile=${inputFileLink}&secretkey=${secretKey}&remarks=${remarks}`
+    let requestUrl
+    if (ORIGIN in DOMAIN) {
+      requestUrl = `${ORIGIN}/parsesse?inputfile=${inputFileLink}&secretkey=${secretKey}&remarks=${remarks}`
+    }
     const sse = new EventSource(requestUrl)
     disableElement("trident", true)
     sse.onerror = (err) => {
@@ -40,7 +43,10 @@ function doParse() {
     }
   } else { // 不支持 SSE，使用 XHR
     const xhr = new XMLHttpRequest()
-    let requestUrl = `${DOMAIN}/parse?inputfile=${inputFileLink}&secretkey=${secretKey}&remarks=${remarks}`
+    let requestUrl
+    if (ORIGIN in DOMAIN) {
+      requestUrl = `${ORIGIN}/parse?inputfile=${inputFileLink}&secretkey=${secretKey}&remarks=${remarks}`
+    }
     xhr.open("POST", requestUrl)
     xhr.send()
   
@@ -84,7 +90,10 @@ function doUpload() {
   form.append("file", fileObj) // "file" 对应 multer 中的 fieldName
 
   const xhr = new XMLHttpRequest()
-  let requestUrl = `${DOMAIN}/upload?secretkey=${secretKey}&remarks=${remarks}`
+  let requestUrl
+  if (ORIGIN in DOMAIN) {
+    requestUrl = `${ORIGIN}/upload?secretkey=${secretKey}&remarks=${remarks}`
+  }
   xhr.open("POST", requestUrl)
   xhr.upload.onprogress = tridentOnProgress
   xhr.upload.onloadend = tridentOnLoadEnd // restore trident logo position-x
@@ -109,7 +118,10 @@ function doSearch() {
   secretKey ? 1 : (secretKey = "tmp")
 
   const xhr = new XMLHttpRequest()
-  let requestUrl = `${DOMAIN}/search?secretkey=${secretKey}`
+  let requestUrl
+  if (ORIGIN in DOMAIN) {
+    requestUrl = `${ORIGIN}/search?secretkey=${secretKey}`
+  }
   xhr.open("POST", requestUrl)
   xhr.send()
   disableElement("trident", true)
@@ -126,7 +138,10 @@ function doSearch() {
 
 function doDelete(FID, fileName, secretKey) {
   let xhr = new XMLHttpRequest()
-  let requestUrl = `${DOMAIN}/delete?FID=${FID}&filename=${fileName}&secretkey=${secretKey}`
+  let requestUrl
+  if (ORIGIN in DOMAIN) {
+    requestUrl = `${ORIGIN}/delete?FID=${FID}&filename=${fileName}&secretkey=${secretKey}`
+  }
   xhr.open("POST", requestUrl)
   xhr.send()
 
@@ -156,7 +171,10 @@ function doChangeKey(FID, fileName) {
   select ? (mode = "change") : (mode = "add")
 
   let xhr = new XMLHttpRequest()
-  let requestUrl = `${DOMAIN}/changekey?FID=${FID}&filename=${fileName}&oldkey=${oldKey}&newkey=${newKey}&mode=${mode}`
+  let requestUrl
+  if (ORIGIN in DOMAIN) {
+    requestUrl = `${ORIGIN}/changekey?FID=${FID}&filename=${fileName}&oldkey=${oldKey}&newkey=${newKey}&mode=${mode}`
+  }
   xhr.open("POST", requestUrl)
   xhr.send()
 
@@ -177,7 +195,10 @@ function doChangeRemarks(FID) {
   if (newRemarks === null) return
 
   let xhr = new XMLHttpRequest()
-  let requestUrl = `${DOMAIN}/changeremarks?FID=${FID}&newremarks=${newRemarks}`
+  let requestUrl
+  if (ORIGIN in DOMAIN) {
+    requestUrl = `${ORIGIN}/changeremarks?FID=${FID}&newremarks=${newRemarks}`
+  }
   xhr.open("POST", requestUrl)
   xhr.send()
 

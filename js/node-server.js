@@ -16,8 +16,7 @@ const exp = express()
 
 import md5File from 'md5-file'
 
-const DOMAIN = 'https://soar.l4d2lk.cn'
-// const DOMAIN = '*'
+const DOMAIN = ['https://soar.l4d2lk.cn', 'https://soar.hykq.cc', '*']
 const WORKPATH = path.resolve(fileURLToPath(import.meta.url), '../..')
 const upload = multer({ dest: `${WORKPATH}/UserFiles/tmp/` }) // 上传的临时文件目录
 
@@ -34,7 +33,11 @@ const pgConfig = {
 
 // From XHR
 exp.post('/parse', async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', DOMAIN)
+  if (req.headers.origin in DOMAIN) {
+    console.log(req.headers.origin)
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
+  }
+  
   try {
     let inputFileLink = req.query.inputfile
     let inputFileName = inputFileLink.substring(
@@ -101,8 +104,15 @@ exp.post('/parse', async (req, res) => {
 
 // From SSE
 exp.get('/parsesse', async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', DOMAIN)
+  if (req.headers.origin in DOMAIN) {
+    console.log(req.headers.origin)
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
+  }
   res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+  res.setHeader('X-Accel-Buffering', 'no')
+  res.flushHeaders()
   try {
     let inputFileLink = req.query.inputfile
     let inputFileName = inputFileLink.substring(
@@ -170,7 +180,10 @@ exp.get('/parsesse', async (req, res) => {
 })
 
 exp.post('/upload', upload.single('file'), async (req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', DOMAIN)
+  if (req.headers.origin in DOMAIN) {
+    console.log(req.headers.origin)
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
+  }
   try {
     let file = req.file
     let fileName = file.originalname
@@ -227,7 +240,7 @@ exp.post('/upload', upload.single('file'), async (req, res, next) => {
       remarks: remarks,
       FID: FID
     })
-    console.log(resData)
+    console.log(`文件已上传：${fileFullPath}`)
     res.send(resData)
   } catch (err) {
     console.error(err)
@@ -236,11 +249,14 @@ exp.post('/upload', upload.single('file'), async (req, res, next) => {
 })
 
 exp.post('/search', async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', DOMAIN)
+  if (req.headers.origin in DOMAIN) {
+    console.log(req.headers.origin)
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
+  }
   try {
     let SQLQuery = `
             SELECT "FileName", "Hash", "SecretKey", "remarks", "FID" 
-            FROM "UserFiles" WHERE "SecretKey" = '${req.query.secretkey}'
+            FROM "UserFiles" WHERE "SecretKey" = '${req.query.secretkey}' ORDER BY "FID" ASC
         `
 
     const client = new pg.Client(pgConfig)
@@ -289,7 +305,10 @@ exp.post('/delete', async (req, res) => {
 
 exp.post('/changekey', async (req, res) => {
   try {
-    res.setHeader('Access-Control-Allow-Origin', DOMAIN)
+    if (req.headers.origin in DOMAIN) {
+      console.log(req.headers.origin)
+      res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
+    }
 
     let FID = req.query.FID
     let fileName = req.query.filename
@@ -381,7 +400,10 @@ exp.post('/changekey', async (req, res) => {
 
 exp.post('/changeremarks', async (req, res) => {
   try {
-    res.setHeader('Access-Control-Allow-Origin', DOMAIN)
+    if (req.headers.origin in DOMAIN) {
+      console.log(req.headers.origin)
+      res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
+    }
 
     let newRemarks = req.query.newremarks
     let SQLQuery = `UPDATE "UserFiles" SET "remarks"='${newRemarks}' WHERE "FID"='${req.query.FID}'`
@@ -405,7 +427,10 @@ exp.post('/changeremarks', async (req, res) => {
 
 // 解决上传监听跨域
 exp.options('/upload', async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', DOMAIN)
+  if (req.headers.origin in DOMAIN) {
+    console.log(req.headers.origin)
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
+  }
   res.status(200).send()
 })
 
@@ -440,6 +465,7 @@ async function renameFile(fileName, fileFloder, fileFullPath) {
   return alterFileName
 }
 
+// TODO: 检查 MD5
 async function checkDuplicateMD5(md5) { }
 
 async function checkFloderExists(floder) {
