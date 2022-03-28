@@ -33,8 +33,7 @@ const pgConfig = {
 
 // From XHR
 exp.post('/parse', async (req, res) => {
-  if (req.headers.DOMAIN.includes(ORIGIN)) {
-    console.log(req.headers.origin)
+  if (DOMAIN.includes(req.headers.origin)) {
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
   }
   
@@ -104,8 +103,7 @@ exp.post('/parse', async (req, res) => {
 
 // From SSE
 exp.get('/parsesse', async (req, res) => {
-  if (req.headers.DOMAIN.includes(ORIGIN)) {
-    console.log(req.headers.origin)
+  if (DOMAIN.includes(req.headers.origin)) {
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
   }
   res.setHeader('Content-Type', 'text/event-stream')
@@ -180,8 +178,7 @@ exp.get('/parsesse', async (req, res) => {
 })
 
 exp.post('/upload', upload.single('file'), async (req, res, next) => {
-  if (req.headers.DOMAIN.includes(ORIGIN)) {
-    console.log(req.headers.origin)
+  if (DOMAIN.includes(req.headers.origin)) {
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
   }
   try {
@@ -282,7 +279,9 @@ exp.post('/search', async (req, res) => {
 })
 
 exp.post('/delete', async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', DOMAIN)
+  if (DOMAIN.includes(req.headers.origin)) {
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
+  }
   try {
     // 删除数据行
     if (!deleteRowDB(req.query.FID)) {
@@ -304,8 +303,7 @@ exp.post('/delete', async (req, res) => {
 
 exp.post('/changekey', async (req, res) => {
   try {
-    if (req.headers.DOMAIN.includes(ORIGIN)) {
-      console.log(req.headers.origin)
+    if (DOMAIN.includes(req.headers.origin)) {
       res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
     }
 
@@ -399,8 +397,7 @@ exp.post('/changekey', async (req, res) => {
 
 exp.post('/changeremarks', async (req, res) => {
   try {
-    if (req.headers.DOMAIN.includes(ORIGIN)) {
-      console.log(req.headers.origin)
+    if (DOMAIN.includes(req.headers.origin)) {
       res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
     }
 
@@ -426,8 +423,7 @@ exp.post('/changeremarks', async (req, res) => {
 
 // 解决上传监听跨域
 exp.options('/upload', async (req, res) => {
-  if (req.headers.DOMAIN.includes(ORIGIN)) {
-    console.log(req.headers.origin)
+  if (DOMAIN.includes(req.headers.origin)) {
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
   }
   res.status(200).send()
