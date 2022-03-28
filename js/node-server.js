@@ -16,7 +16,7 @@ const exp = express()
 
 import md5File from 'md5-file'
 
-const DOMAIN = ['https://soar.l4d2lk.cn', 'https://soar.hykq.cc', '*']
+const DOMAIN = ['https://soar.l4d2lk.cn', 'https://soar.hykq.cc', 'http://127.0.0.1:3000']
 const WORKPATH = path.resolve(fileURLToPath(import.meta.url), '../..')
 const upload = multer({ dest: `${WORKPATH}/UserFiles/tmp/` }) // 上传的临时文件目录
 
@@ -33,7 +33,7 @@ const pgConfig = {
 
 // From XHR
 exp.post('/parse', async (req, res) => {
-  if (req.headers.origin in DOMAIN) {
+  if (req.headers.DOMAIN.includes(ORIGIN)) {
     console.log(req.headers.origin)
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
   }
@@ -104,7 +104,7 @@ exp.post('/parse', async (req, res) => {
 
 // From SSE
 exp.get('/parsesse', async (req, res) => {
-  if (req.headers.origin in DOMAIN) {
+  if (req.headers.DOMAIN.includes(ORIGIN)) {
     console.log(req.headers.origin)
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
   }
@@ -180,7 +180,7 @@ exp.get('/parsesse', async (req, res) => {
 })
 
 exp.post('/upload', upload.single('file'), async (req, res, next) => {
-  if (req.headers.origin in DOMAIN) {
+  if (req.headers.DOMAIN.includes(ORIGIN)) {
     console.log(req.headers.origin)
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
   }
@@ -249,8 +249,7 @@ exp.post('/upload', upload.single('file'), async (req, res, next) => {
 })
 
 exp.post('/search', async (req, res) => {
-  if (req.headers.origin in DOMAIN) {
-    console.log(req.headers.origin)
+  if (DOMAIN.includes(req.headers.origin)) {
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
   }
   try {
@@ -305,7 +304,7 @@ exp.post('/delete', async (req, res) => {
 
 exp.post('/changekey', async (req, res) => {
   try {
-    if (req.headers.origin in DOMAIN) {
+    if (req.headers.DOMAIN.includes(ORIGIN)) {
       console.log(req.headers.origin)
       res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
     }
@@ -400,7 +399,7 @@ exp.post('/changekey', async (req, res) => {
 
 exp.post('/changeremarks', async (req, res) => {
   try {
-    if (req.headers.origin in DOMAIN) {
+    if (req.headers.DOMAIN.includes(ORIGIN)) {
       console.log(req.headers.origin)
       res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
     }
@@ -427,7 +426,7 @@ exp.post('/changeremarks', async (req, res) => {
 
 // 解决上传监听跨域
 exp.options('/upload', async (req, res) => {
-  if (req.headers.origin in DOMAIN) {
+  if (req.headers.DOMAIN.includes(ORIGIN)) {
     console.log(req.headers.origin)
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
   }

@@ -1,6 +1,8 @@
 "use strict"
-const DOMAIN = ['https://soar.l4d2lk.cn', 'https://soar.hykq.cc', 'http://localhost:8001']
+const DOMAIN = ['https://soar.l4d2lk.cn', 'https://soar.hykq.cc']
 const ORIGIN = document.location.origin
+const HOSTNAME = document.location.hostname
+const LOCALNODE = 'http://127.0.0.1:8001'
 
 function doParse() {
   let inputFile = document.getElementById("inputFile")
@@ -18,8 +20,10 @@ function doParse() {
   }
   if ('EventSource' in window) { // 支持 SSE
     let requestUrl
-    if (ORIGIN in DOMAIN) {
+    if (DOMAIN.includes(ORIGIN)) {
       requestUrl = `${ORIGIN}/parsesse?inputfile=${inputFileLink}&secretkey=${secretKey}&remarks=${remarks}`
+    } else if (HOSTNAME == '127.0.0.1') {
+      requestUrl = `${LOCALNODE}/parsesse?inputfile=${inputFileLink}&secretkey=${secretKey}&remarks=${remarks}`
     }
     const sse = new EventSource(requestUrl)
     disableElement("trident", true)
@@ -44,8 +48,10 @@ function doParse() {
   } else { // 不支持 SSE，使用 XHR
     const xhr = new XMLHttpRequest()
     let requestUrl
-    if (ORIGIN in DOMAIN) {
+    if (DOMAIN.includes(ORIGIN)) {
       requestUrl = `${ORIGIN}/parse?inputfile=${inputFileLink}&secretkey=${secretKey}&remarks=${remarks}`
+    } else if (HOSTNAME == '127.0.0.1') {
+      requestUrl = `${LOCALNODE}/parse?inputfile=${inputFileLink}&secretkey=${secretKey}&remarks=${remarks}`
     }
     xhr.open("POST", requestUrl)
     xhr.send()
@@ -91,8 +97,10 @@ function doUpload() {
 
   const xhr = new XMLHttpRequest()
   let requestUrl
-  if (ORIGIN in DOMAIN) {
+  if (DOMAIN.includes(ORIGIN)) {
     requestUrl = `${ORIGIN}/upload?secretkey=${secretKey}&remarks=${remarks}`
+  } else if (HOSTNAME == '127.0.0.1') {
+    requestUrl = `${LOCALNODE}/upload?secretkey=${secretKey}&remarks=${remarks}`
   }
   xhr.open("POST", requestUrl)
   xhr.upload.onprogress = tridentOnProgress
@@ -119,8 +127,11 @@ function doSearch() {
 
   const xhr = new XMLHttpRequest()
   let requestUrl
-  if (ORIGIN in DOMAIN) {
+  if (DOMAIN.includes(ORIGIN)) {
     requestUrl = `${ORIGIN}/search?secretkey=${secretKey}`
+  } else if (HOSTNAME == '127.0.0.1') {
+    console.log('localhost');
+    requestUrl = `${LOCALNODE}/search?secretkey=${secretKey}`
   }
   xhr.open("POST", requestUrl)
   xhr.send()
@@ -128,6 +139,7 @@ function doSearch() {
 
   xhr.onreadystatechange = () => {
     disableElement("trident", false)
+    console.log(xhr.status)
     if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
       hideElement("search-result-table", false)
       let table = document.getElementById("search-result-table")
@@ -139,8 +151,10 @@ function doSearch() {
 function doDelete(FID, fileName, secretKey) {
   let xhr = new XMLHttpRequest()
   let requestUrl
-  if (ORIGIN in DOMAIN) {
+  if (DOMAIN.includes(ORIGIN)) {
     requestUrl = `${ORIGIN}/delete?FID=${FID}&filename=${fileName}&secretkey=${secretKey}`
+  } else if (HOSTNAME == '127.0.0.1') {
+    requestUrl = `${LOCALNODE}/delete?FID=${FID}&filename=${fileName}&secretkey=${secretKey}`
   }
   xhr.open("POST", requestUrl)
   xhr.send()
@@ -172,8 +186,10 @@ function doChangeKey(FID, fileName) {
 
   let xhr = new XMLHttpRequest()
   let requestUrl
-  if (ORIGIN in DOMAIN) {
+  if (DOMAIN.includes(ORIGIN)) {
     requestUrl = `${ORIGIN}/changekey?FID=${FID}&filename=${fileName}&oldkey=${oldKey}&newkey=${newKey}&mode=${mode}`
+  } else if (HOSTNAME == '127.0.0.1') {
+    requestUrl = `${LOCALNODE}/changekey?FID=${FID}&filename=${fileName}&oldkey=${oldKey}&newkey=${newKey}&mode=${mode}`
   }
   xhr.open("POST", requestUrl)
   xhr.send()
@@ -196,8 +212,10 @@ function doChangeRemarks(FID) {
 
   let xhr = new XMLHttpRequest()
   let requestUrl
-  if (ORIGIN in DOMAIN) {
+  if (DOMAIN.includes(ORIGIN)) {
     requestUrl = `${ORIGIN}/changeremarks?FID=${FID}&newremarks=${newRemarks}`
+  } else if (HOSTNAME == '127.0.0.1') {
+    requestUrl = `${LOCALNODE}/changeremarks?FID=${FID}&newremarks=${newRemarks}`
   }
   xhr.open("POST", requestUrl)
   xhr.send()
