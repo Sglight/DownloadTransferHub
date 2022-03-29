@@ -64,6 +64,8 @@ exp.post('/parse', async (req, res) => {
 
     let hash = await md5File(decodeURIComponent(fileFullPath))
 
+    // TODO 检查 MD5，重复则删除文件改用硬链接
+
     // 更新数据库
     let SQLQuery = `
             INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks", "originlink", "ip", "ua") 

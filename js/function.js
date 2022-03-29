@@ -130,7 +130,6 @@ function doSearch() {
   if (DOMAIN.includes(ORIGIN)) {
     requestUrl = `${ORIGIN}/search?secretkey=${secretKey}`
   } else if (HOSTNAME == '127.0.0.1') {
-    console.log('localhost');
     requestUrl = `${LOCALNODE}/search?secretkey=${secretKey}`
   }
   xhr.open("POST", requestUrl)
@@ -139,7 +138,6 @@ function doSearch() {
 
   xhr.onreadystatechange = () => {
     disableElement("trident", false)
-    console.log(xhr.status)
     if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
       hideElement("search-result-table", false)
       let table = document.getElementById("search-result-table")
@@ -171,8 +169,12 @@ function doChangeKey(FID, fileName) {
   // 参数：FID, oldkey, newkey, mode
   let row = document.getElementById(`fid-${FID}`)
   let oldKey = row.childNodes[2].childNodes[0].text
+  // TODO 更改询问方法
   let newKey = prompt(`输入新的密令\n当前密令为 '${oldKey}'`)
-  newKey ? 1 : (newKey = "tmp") // set default value tmp
+  if (newKey === null) { // 为空与取消都是 null，设置不允许为空
+    showPopupTips("新密令为空", 'red')
+    return
+  }
   if (oldKey === newKey) { // 新旧密令相同
     showPopupTips("新旧密令相同", 'red')
     return
