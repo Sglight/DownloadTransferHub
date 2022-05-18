@@ -7,3 +7,4 @@ dist
 workspace.code-workspace
 UserFiles
 .vscode
+.editorconfig
