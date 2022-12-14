@@ -229,6 +229,28 @@ function doChangeRemarks(FID) {
   }
 }
 
+function doRename(FID, fileName, secretKey) {
+  let row = document.getElementById(`fid-${FID}`)
+  let newFileName = prompt("请输入新文件名", row.childNodes[0].childNodes[0].text)
+  if (newFileName === null) return
+
+  let xhr = new XMLHttpRequest()
+  let requestUrl
+  if (DOMAIN.includes(ORIGIN)) {
+    requestUrl = `${ORIGIN}/rename?FID=${FID}&newfilename=${newFileName}&oldfilename=${fileName}&secretkey=${secretKey}`
+  } else if (HOSTNAME == '127.0.0.1') {
+    requestUrl = `${LOCALNODE}/rename?FID=${FID}&newfilename=${newFileName}&oldfilename=${fileName}&secretkey=${secretKey}`
+  }
+  xhr.open("POST", requestUrl)
+  xhr.send()
+
+  xhr.onreadystatechange = () => {
+    if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
+      row.childNodes[0].childNodes[0].text = newFileName // row - td[3] - a[0] - text
+    }
+  }
+}
+
 function doTrident() {
   let mode = document.getElementById("mode").getAttribute("value")
   switch (mode) {

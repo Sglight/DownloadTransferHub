@@ -95,7 +95,7 @@ button:hover {
 }
 
 #inputFile {
-  background: url("../src/cloud-download.svg") 10px 11px no-repeat;
+  background: url("../resources/") 10px 11px no-repeat;
   text-indent: 35px;
 }
 
@@ -144,19 +144,19 @@ button:hover {
 }
 
 #uploadFile {
-  background: url("../src/cloud-upload.svg") 10px 11px no-repeat;
+  background: url("../resources/cloud-upload.svg") 10px 11px no-repeat;
   text-indent: 35px;
   display: none;
 }
 
 #secretKey {
-  background: url("../src/key.svg") 10px 11px no-repeat;
+  background: url("../resources/key.svg") 10px 11px no-repeat;
   width: 35%;
   text-indent: 35px;
 }
 
 #remarks {
-  background: url("../src/chat-left-dots.svg") 10px 11px no-repeat;
+  background: url("../resources/chat-left-dots.svg") 10px 11px no-repeat;
   width: 35%;
   text-indent: 35px;
 }
@@ -168,7 +168,7 @@ button:hover {
 
 #trident:disabled {
   background-color: gray;
-  background-image: url("../src/NewTux.svg");
+  background-image: url("../resources/NewTux.svg");
   background-size: 31px 37px;
   background-repeat: no-repeat;
   background-position-y: 1px;
@@ -230,15 +230,19 @@ td a {
 }
 
 .delete-button {
-  background: url("../src/trash-fill.svg") 7px 8px no-repeat;
+  background: url("../resources/trash-fill.svg") 7px 8px no-repeat;
 }
 
 .change-key-button {
-  background: url("../src/key-fill.svg") 7px 8px no-repeat;
+  background: url("../resources/key-fill.svg") 7px 8px no-repeat;
 }
 
 .change-remarks-button {
-  background: url("../src/chat-left-dots-fill.svg") 7px 8px no-repeat;
+  background: url("../resources/chat-left-dots-fill.svg") 7px 8px no-repeat;
+}
+
+.rename-button {
+  background: url("../resources/pencil-square.svg") 7px 8px no-repeat;
 }
 
 #popup-tips {

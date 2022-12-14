@@ -122,6 +122,11 @@ function createResultTable(table, responseJSON) {
     doChangeRemarks,
     responseJSON.FID
   )
+  fillOperateCell(operateCell, "rename-button", "重命名", doRename, [
+    responseJSON.FID,
+    responseJSON.FileName,
+    responseJSON.SecretKey,
+  ])
 }
 
 function fillRowCell(cell, href, text) {

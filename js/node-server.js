@@ -202,7 +202,7 @@ exp.post('/upload', upload.single('file'), async (req, res, next) => {
     // 检查是否已存在相同文件
     let alterFileName = await renameFile(fileName, fileFloder, fileFullPath)
     fileFullPath = `${fileFloder}/${alterFileName}`
-    fs.rename(tmpPath, fileFullPath, (err) => {
+    fs.renameSync(tmpPath, fileFullPath, (err) => {
       if (err) {
         console.log(err)
       }
@@ -212,7 +212,7 @@ exp.post('/upload', upload.single('file'), async (req, res, next) => {
 
     let SQLQuery = `
             INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks", "originlink", "ip", "ua") 
-            VALUES('${fileName}', '${hash}', '${secretKey}', '${remarks}', 'UPLOAD', '${ip}', '${ua}') 
+            VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}', 'UPLOAD', '${ip}', '${ua}') 
             RETURNING "FID"
         `
     const client = new pg.Client(pgConfig)
@@ -423,6 +423,44 @@ exp.post('/changeremarks', async (req, res) => {
   }
 })
 
+exp.post('/rename', async (req, res) => {
+  try {
+    if (DOMAIN.includes(req.headers.origin)) {
+      res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
+    }
+
+    let oldFileName = req.query.oldfilename
+    let newFileName = req.query.newfilename
+    let secretKey = req.query.secretkey
+    let fileFloder = `${WORKPATH}/UserFiles/${secretKey}/`
+    let oldFileFullPath = `${fileFloder}/${oldFileName}`
+    let newFileFullPath = `${fileFloder}/${newFileName}`
+
+    // 检查新名称是否重复
+    newFileName = await renameFile(newFileName, fileFloder, newFileFullPath)
+
+    // 重命名文件
+    fs.renameSync(oldFileFullPath, newFileFullPath)
+
+    let SQLQuery = `UPDATE "UserFiles" SET "FileName"='${newFileName}' WHERE "FID"='${req.query.FID}'`
+
+    const client = new pg.Client(pgConfig)
+
+    client.connect((err) => {
+      if (err) console.log(err)
+    })
+    await client.query(SQLQuery)
+    client.end((err) => {
+      if (err) console.log(err)
+    })
+
+    res.send(`Filename changed to ${newFileName}.`)
+  } catch (err) {
+    console.error(err)
+    res.status(500).send(err)
+  }
+})
+
 // 解决上传监听跨域
 exp.options('/upload', async (req, res) => {
   if (DOMAIN.includes(req.headers.origin)) {
@@ -463,7 +501,9 @@ async function renameFile(fileName, fileFloder, fileFullPath) {
 }
 
 // TODO: 检查 MD5
-async function checkDuplicateMD5(md5) { }
+async function checkDuplicateMD5(md5) {
+  // check md5
+}
 
 async function checkFloderExists(floder) {
   if (!fs.existsSync(floder)) {
