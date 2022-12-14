@@ -234,6 +234,8 @@ function doRename(FID, fileName, secretKey) {
   let newFileName = prompt("请输入新文件名", row.childNodes[0].childNodes[0].text)
   if (newFileName === null) return
 
+  let newHref = `UserFiles/${secretKey}/${newFileName}`
+
   let xhr = new XMLHttpRequest()
   let requestUrl
   if (DOMAIN.includes(ORIGIN)) {
@@ -246,7 +248,8 @@ function doRename(FID, fileName, secretKey) {
 
   xhr.onreadystatechange = () => {
     if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
-      row.childNodes[0].childNodes[0].text = newFileName // row - td[3] - a[0] - text
+      row.childNodes[0].childNodes[0].text = newFileName
+      row.childNodes[0].childNodes[0].href = newHref
     }
   }
 }
