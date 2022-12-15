@@ -19,12 +19,14 @@ Nginx 1.20.2 + Node.js 14.19.1 + PostgreSQL 13.6
 
 ## TODO
 
-1. 文件 md5 校验与硬链接
+1. 文件 md5 校验与硬链接（半完成）
 2. 定时清理文件
 3. 多文件下载
 4. UI 修改
 5. 文本分享
-6. 文件重命名
-7. 增加一个在线预览按钮
+6. zip 在线预览 node-stream-zip
+7. office 在线预览 Microsoft Office Web Viewer
+8. pdf 在线预览（针对 Android）PDF.js
+9. 增加 log 日志文件记录错误
 
 摸了。

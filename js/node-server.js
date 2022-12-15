@@ -72,13 +72,12 @@ exp.post('/parse', async (req, res) => {
             VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}', '${inputFileLink}', '${ip}', '${ua}') 
             RETURNING "FID"
         `
-    const client = new pg.Client(pgConfig)
-    client.connect((err) => {
-      if (err) {
-        console.error(err)
-        res.status(500).send(err)
-      }
-    })
+
+    const client = await connectPG()
+    if (client === null) {
+      res.status(500).send('Connect PG Error')
+      return
+    }
 
     let sqlResult = await client.query(SQLQuery)
     let FID = sqlResult.rows[0].FID
@@ -146,13 +145,12 @@ exp.get('/parsesse', async (req, res) => {
             VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}', '${inputFileLink}', '${ip}', '${ua}') 
             RETURNING "FID"
         `
-    const client = new pg.Client(pgConfig)
-    client.connect((err) => {
-      if (err) {
-        console.error(err)
-        res.status(500).send('数据库连接失败，请联系网站管理员处理')
-      }
-    })
+
+    const client = await connectPG()
+    if (client === null) {
+      res.status(500).send('Connect PG Error')
+      return
+    }
 
     let sqlResult = await client.query(SQLQuery)
     let FID = sqlResult.rows[0].FID
@@ -202,26 +200,40 @@ exp.post('/upload', upload.single('file'), async (req, res, next) => {
     // 检查是否已存在相同文件
     let alterFileName = await renameFile(fileName, fileFloder, fileFullPath)
     fileFullPath = `${fileFloder}/${alterFileName}`
-    fs.renameSync(tmpPath, fileFullPath, (err) => {
-      if (err) {
-        console.log(err)
-      }
-    })
 
-    let hash = await md5File(decodeURIComponent(fileFullPath))
+    // 检查临时文件 MD5 是否重复
+    let hash = await md5File(decodeURIComponent(tmpPath))
+    let duplicate = await checkDuplicate(hash)
+    if (duplicate) { // 有重复文件，直接硬链接，删除临时文件，实际上检查应该是前端完成？
+      console.log('Duplicate File')
+      console.log(duplicate)
+      let secretKey = duplicate[0][0]
+      let fileName = duplicate[0][1]
+      let originFullPath = `${UserFileFloder}/${secretKey}/${fileName}`
 
+      fs.linkSync(originFullPath, fileFullPath)
+      fs.rmSync(tmpPath)
+      
+      console.log(originFullPath)
+      console.log(fileFullPath)
+    } else { // 无重复文件，移动临时文件到目标文件夹
+      fs.renameSync(tmpPath, fileFullPath, (err) => {
+        if (err) {
+          console.log(err)
+        }
+      })
+    }
     let SQLQuery = `
             INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks", "originlink", "ip", "ua") 
             VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}', 'UPLOAD', '${ip}', '${ua}') 
             RETURNING "FID"
         `
-    const client = new pg.Client(pgConfig)
-    client.connect((err) => {
-      if (err) {
-        console.error(err)
-        res.status(500).send(err)
-      }
-    })
+
+    const client = await connectPG()
+    if (client === null) {
+      res.status(500).send('Connect PG Error')
+      return
+    }
 
     let sqlResult = await client.query(SQLQuery)
     let FID = sqlResult.rows[0].FID
@@ -257,14 +269,11 @@ exp.post('/search', async (req, res) => {
             FROM "UserFiles" WHERE "SecretKey" = '${req.query.secretkey}' ORDER BY "FID" ASC
         `
 
-    const client = new pg.Client(pgConfig)
-
-    client.connect((err) => {
-      if (err) {
-        console.error(err)
-        res.status(500).send(err)
-      }
-    })
+    const client = await connectPG()
+    if (client === null) {
+      res.status(500).send('Connect PG Error')
+      return
+    }
 
     let sqlResult = await client.query(SQLQuery)
     res.send(sqlResult.rows)
@@ -295,6 +304,10 @@ exp.post('/delete', async (req, res) => {
     // 删除文件
     if (fs.existsSync(fileFullPath)) {
       fs.rmSync(fileFullPath)
+    }
+    // 如果文件夹为空，则删除文件夹
+    if (fs.readdirSync(`${WORKPATH}/UserFiles/${req.query.secretkey}`).length === 0) {
+      fs.rmdirSync(`${WORKPATH}/UserFiles/${req.query.secretkey}`)
     }
     res.send('deleted')
   } catch (err) {
@@ -328,14 +341,11 @@ exp.post('/changekey', async (req, res) => {
       let SQLQuery = `SELECT "Hash" FROM "UserFiles" 
             WHERE ("SecretKey"='${newKey}' AND "FileName"='${fileName}') OR ("FID"='${FID}')`
 
-      const client = new pg.Client(pgConfig)
-
-      client.connect((err) => {
-        if (err) {
-          console.error(err)
-          res.status(500).send(err)
-        }
-      })
+      const client = await connectPG()
+      if (client === null) {
+        res.status(500).send('Connect PG Error')
+        return
+      }
 
       let sqlResult = await client.query(SQLQuery)
       let hash1 = sqlResult.rows[0].Hash
@@ -371,14 +381,12 @@ exp.post('/changekey', async (req, res) => {
     let ADDQUERY = `INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks") 
         SELECT "FileName", "Hash", '${newKey}', "remarks" FROM "UserFiles" WHERE "FID"='${FID}'`
 
-    const client = new pg.Client(pgConfig)
+    const client = await connectPG()
+    if (client === null) {
+      res.status(500).send('Connect PG Error')
+      return
+    }
 
-    client.connect((err) => {
-      if (err) {
-        console.error(err)
-        res.status(500).send(err)
-      }
-    })
     if (mode == 'change' && !bExisted) {
       await client.query(CHANGEQUERY)
     } else if (mode == 'add' && !bExisted) {
@@ -406,11 +414,12 @@ exp.post('/changeremarks', async (req, res) => {
     let newRemarks = req.query.newremarks
     let SQLQuery = `UPDATE "UserFiles" SET "remarks"='${newRemarks}' WHERE "FID"='${req.query.FID}'`
 
-    const client = new pg.Client(pgConfig)
+    const client = await connectPG()
+    if (client === null) {
+      res.status(500).send('Connect PG Error')
+      return
+    }
 
-    client.connect((err) => {
-      if (err) console.log(err)
-    })
     await client.query(SQLQuery)
     client.end((err) => {
       if (err) console.log(err)
@@ -444,11 +453,12 @@ exp.post('/rename', async (req, res) => {
 
     let SQLQuery = `UPDATE "UserFiles" SET "FileName"='${newFileName}' WHERE "FID"='${req.query.FID}'`
 
-    const client = new pg.Client(pgConfig)
+    const client = await connectPG()
+    if (client === null) {
+      res.status(500).send('Connect PG Error')
+      return
+    }
 
-    client.connect((err) => {
-      if (err) console.log(err)
-    })
     await client.query(SQLQuery)
     client.end((err) => {
       if (err) console.log(err)
@@ -472,12 +482,11 @@ exp.options('/upload', async (req, res) => {
 async function deleteRowDB(FID) {
   let SQLQuery = `DELETE FROM "UserFiles" WHERE "FID"='${FID}'`
 
-  const client = new pg.Client(pgConfig)
-  // 数据库连接失败
-  client.connect((err) => {
-    if (err) console.log(err)
-    return false
-  })
+  const client = await connectPG()
+  if (client === null) {
+    res.status(500).send('Connect PG Error')
+    return
+  }
 
   await client.query(SQLQuery)
   client.end((err) => {
@@ -500,11 +509,34 @@ async function renameFile(fileName, fileFloder, fileFullPath) {
   return alterFileName
 }
 
-// TODO: 检查 MD5
-async function checkDuplicateMD5(md5) {
-  // check md5
+// 检查 MD5
+// 有重复则返回 [secretKey, fileName]，能定位到源文件
+// 没有重复则返回 null
+async function checkDuplicate(md5) {
+  let SQLQuery = `SELECT "FID", "FileName", "SecretKey" FROM "UserFiles" WHERE "Hash"='${md5}' order by "FID" asc`
+
+  const client = await connectPG()
+  if (client === null) {
+    res.status(500).send('Connect PG Error')
+    return
+  }
+  let sqlResult = await client.query(SQLQuery)
+  
+  let array = []
+
+  if (sqlResult.rowCount === 0) { // 无重复，返回 null
+    return null
+  } else { // 有重复，遍历所有行，返回二维数组
+    for (let i = 0; i < sqlResult.rowCount; i++) {
+      let fileName = sqlResult.rows[i].FileName
+      let secretKey = sqlResult.rows[i].SecretKey
+      array.push([secretKey, fileName])
+    }
+    return array
+  }
 }
 
+// 检查文件夹是否存在，不存在则创建
 async function checkFloderExists(floder) {
   if (!fs.existsSync(floder)) {
     fs.mkdirSync(floder)
@@ -554,6 +586,16 @@ function downloadFileResumption(fileURL, fileSavePath, sseRes) {
       reject(e)
     })
   })
+}
+
+async function connectPG() {
+  const client = new pg.Client(pgConfig)
+  // 数据库连接失败
+  client.connect((err) => {
+    if (err) console.log(err)
+    return null
+  })
+  return client
 }
 
 exp.listen(8001, () => {

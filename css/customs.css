@@ -95,7 +95,7 @@ button:hover {
 }
 
 #inputFile {
-  background: url("../resources/") 10px 11px no-repeat;
+  background: url("../resources/cloud-download.svg") 10px 11px no-repeat;
   text-indent: 35px;
 }
 
