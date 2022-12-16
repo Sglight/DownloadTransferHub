@@ -9,6 +9,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import fetch from "node-fetch"
 import progressStream from 'progress-stream'
+import schedule from 'node-schedule'
 
 import express from 'express'
 import multer from 'multer'
@@ -588,6 +589,7 @@ function downloadFileResumption(fileURL, fileSavePath, sseRes) {
   })
 }
 
+// 连接数据库
 async function connectPG() {
   const client = new pg.Client(pgConfig)
   // 数据库连接失败
@@ -597,6 +599,54 @@ async function connectPG() {
   })
   return client
 }
+
+// 定期删除超时临时文件
+async function deleteTempFiles() {
+  try {
+    const client = await connectPG()
+    if (client === null) {
+      return
+    }
+
+    let now = new Date().getTime()
+    const sevenDay = 1000 * 60 * 60 * 24 * 7
+    const thirtyDay = 1000 * 60 * 60 * 24 * 30
+
+    let SQLQuery = `SELECT "FID", "FileName", "SecretKey", "timestamp" FROM "UserFiles" WHERE "SecretKey"='tmp'`
+    let sqlResult = await client.query(SQLQuery)
+    let rows = sqlResult.rows
+    console.log(rows)
+    rows.forEach(element => {
+      // 删除 7 - 30 天之内的文件
+      if (now - element.timestamp > sevenDay && now - element.timestamp < thirtyDay) {
+        // delete file
+        let fileFullPath = `${WORKPATH}/UserFiles/${req.query.secretkey}/${req.query.filename}`
+        // 删除文件
+        if (fs.existsSync(fileFullPath)) {
+          fs.rmSync(fileFullPath)
+        }
+        // 如果文件夹为空，则删除文件夹
+        if (fs.readdirSync(`${WORKPATH}/UserFiles/${req.query.secretkey}`).length === 0) {
+          fs.rmdirSync(`${WORKPATH}/UserFiles/${req.query.secretkey}`)
+        }
+
+        // delete row
+        deleteRowDB(element.FID)
+        
+        // TODO: 可以写入 log
+      }
+    })
+  }
+  catch (err) {
+    console.error(err)
+    // TODO: 可以写入 log
+  }
+}
+
+// 每周日凌晨 0 点执行
+schedule.scheduleJob('0 0 0 * * 0', () => {
+  deleteTempFiles()
+})
 
 exp.listen(8001, () => {
   console.log(`Service starts.`)
