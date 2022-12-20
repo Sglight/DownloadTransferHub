@@ -127,6 +127,11 @@ function createResultTable(table, responseJSON) {
     responseJSON.FileName,
     responseJSON.SecretKey,
   ])
+  fillOperateCell(operateCell, "preview-button", "预览", doPreview, [
+    responseJSON.FID,
+    responseJSON.FileName,
+    responseJSON.SecretKey,
+  ])
 }
 
 function fillRowCell(cell, href, text) {
@@ -180,9 +185,9 @@ function createResultTableIterate(table, responseJSON) {
 // empty link / file flash 空链接 / 文件闪光
 function flashEmptyInput(input) {
   input.style.animation = "alert-glow 250ms ease-out 3"
-    setTimeout(() => {
-      input.style.animation = ""
-    }, 750)
+  setTimeout(() => {
+    input.style.animation = ""
+  }, 750)
 }
 
 // progress bar 进度条
@@ -221,7 +226,7 @@ function showPopupTips(text, color) {
   // 更改弹框坐标、文字、背景颜色
   tips.style.top = alterTop
   tipsText.textContent = text
-  switch(color) {
+  switch (color) {
     case 'red':
       bgColor = '#ff5252'
       boxShadow = '0px 6px 2px -1px rgba(211, 47, 47, 0.3)'
@@ -239,4 +244,33 @@ function showPopupTips(text, color) {
     tips.style.top = originTop
     popupTimeoutID = null
   }, 2500)
+}
+
+// 弹窗
+let modal = document.querySelector(".modal")
+let closeBtn = document.querySelector(".close-btn")
+
+function showPreviewZipModal(responseJSON) {
+  modal.style.display = "block"
+  let text = ""
+  modal.querySelector(".modal-content-title").innerHTML = "压缩文件预览"
+  let modalContentText = modal.querySelector(".modal-content-text")
+  modalContentText.innerHTML = `正在加载压缩文件...`
+  for (let index in responseJSON) {
+    // 按行显示
+    text += `<div class="zip-row">
+      <span class="zip-row-content">${responseJSON[index].name}</span>
+      <span class="zip-row-content">${responseJSON[index].desc}</span>
+    </div>`
+  }
+  modalContentText.innerHTML = text
+}
+
+closeBtn.onclick = function () {
+  modal.style.display = "none"
+}
+window.onclick = function (e) {
+  if (e.target == modal) {
+    modal.style.display = "none"
+  }
 }

@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url'
 import fetch from "node-fetch"
 import progressStream from 'progress-stream'
 import schedule from 'node-schedule'
+import streamZip from 'node-stream-zip'
 
 import express from 'express'
 import multer from 'multer'
@@ -37,7 +38,7 @@ exp.post('/parse', async (req, res) => {
   if (DOMAIN.includes(req.headers.origin)) {
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
   }
-  
+
   try {
     let inputFileLink = req.query.inputfile
     let inputFileName = inputFileLink.substring(
@@ -214,7 +215,7 @@ exp.post('/upload', upload.single('file'), async (req, res, next) => {
 
       fs.linkSync(originFullPath, fileFullPath)
       fs.rmSync(tmpPath)
-      
+
       console.log(originFullPath)
       console.log(fileFullPath)
     } else { // 无重复文件，移动临时文件到目标文件夹
@@ -480,6 +481,25 @@ exp.options('/upload', async (req, res) => {
   res.status(200).send()
 })
 
+exp.post('/previewzip', async (req, res) => {
+  try {
+    if (DOMAIN.includes(req.headers.origin)) {
+      res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
+    }
+
+    let secretKey = req.query.secretkey
+    let fileName = req.query.filename
+    let zipFilePath = `${WORKPATH}/UserFiles/${secretKey}/${fileName}`
+    let zipEntries = await getZipFileContent(zipFilePath)
+
+    res.status(200).send(zipEntries)
+  }
+  catch (err) {
+    console.error(err)
+    res.status(500).send(err)
+  }
+})
+
 async function deleteRowDB(FID) {
   let SQLQuery = `DELETE FROM "UserFiles" WHERE "FID"='${FID}'`
 
@@ -522,7 +542,7 @@ async function checkDuplicate(md5) {
     return
   }
   let sqlResult = await client.query(SQLQuery)
-  
+
   let array = []
 
   if (sqlResult.rowCount === 0) { // 无重复，返回 null
@@ -632,7 +652,7 @@ async function deleteTempFiles() {
 
         // delete row
         deleteRowDB(element.FID)
-        
+
         // TODO: 可以写入 log
       }
     })
@@ -647,6 +667,43 @@ async function deleteTempFiles() {
 schedule.scheduleJob('0 0 0 * * 0', () => {
   deleteTempFiles()
 })
+
+// 获取压缩文件内容
+async function getZipFileContent(zipFilePath) {
+  const zip = new streamZip.async({ file: zipFilePath })
+  // console.log(`Entries read: ${entriesCount}`)
+
+  const entries = await zip.entries()
+  let result = {}
+
+  let index = 0
+  for (const entry of Object.values(entries)) {
+    let obj = {}
+    const desc = entry.isDirectory ? 'directory' : `${formatBytes(entry.size)}`
+    obj.name = entry.name
+    obj.desc = desc
+    // console.log(`Entry ${entry.name}: ${desc}`)
+    result[index] = obj
+    index++
+  }
+
+  // Do not forget to close the file once you're done
+  await zip.close()
+  return result
+}
+
+// 存储单位转换
+function formatBytes(bytes, decimals = 2) {
+  if (bytes === 0) return '0 Bytes'
+
+  const k = 1024
+  const dm = decimals < 0 ? 0 : decimals
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
+}
 
 exp.listen(8001, () => {
   console.log(`Service starts.`)
