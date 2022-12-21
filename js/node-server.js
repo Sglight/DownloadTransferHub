@@ -22,6 +22,11 @@ const DOMAIN = ['https://soar.l4d2lk.cn', 'https://soar.hykq.cc', 'http://127.0.
 const WORKPATH = path.resolve(fileURLToPath(import.meta.url), '../..')
 const upload = multer({ dest: `${WORKPATH}/UserFiles/tmp/` }) // 上传的临时文件目录
 
+// 保存日志到文件
+checkFloderExists(`${WORKPATH}/logs`)
+const LOGFILE = fs.createWriteStream(`${WORKPATH}/logs/node-server.log`, { flags: 'a', encoding: 'utf8', })
+let logger = new console.Console(LOGFILE)
+
 const pgConfig = {
   host: process.env.hksrvip,
   // Do not hard code your username and password.
@@ -85,7 +90,7 @@ exp.post('/parse', async (req, res) => {
     let FID = sqlResult.rows[0].FID
     client.end((err) => {
       if (err) {
-        console.error(err)
+        logger.error(err)
         res.status(500).send(err)
       }
     })
@@ -99,7 +104,7 @@ exp.post('/parse', async (req, res) => {
     })
     res.send(resData)
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     res.status(500).send(err)
   }
 })
@@ -158,7 +163,7 @@ exp.get('/parsesse', async (req, res) => {
     let FID = sqlResult.rows[0].FID
     client.end((err) => {
       if (err) {
-        console.error(err)
+        logger.error(err)
         res.status(500).send('数据库操作失败，请联系网站管理员处理')
       }
     })
@@ -174,7 +179,7 @@ exp.get('/parsesse', async (req, res) => {
     res.write(`data: ${resData}\n\n`)
     res.end()
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     res.status(500).send('发生神秘错误')
   }
 })
@@ -221,7 +226,7 @@ exp.post('/upload', upload.single('file'), async (req, res, next) => {
     } else { // 无重复文件，移动临时文件到目标文件夹
       fs.renameSync(tmpPath, fileFullPath, (err) => {
         if (err) {
-          console.log(err)
+          logger.error(err)
         }
       })
     }
@@ -241,7 +246,7 @@ exp.post('/upload', upload.single('file'), async (req, res, next) => {
     let FID = sqlResult.rows[0].FID
     client.end((err) => {
       if (err) {
-        console.error(err)
+        logger.error(err)
         res.status(500).send(err)
       }
     })
@@ -256,7 +261,7 @@ exp.post('/upload', upload.single('file'), async (req, res, next) => {
     console.log(`文件已上传：${fileFullPath}`)
     res.send(resData)
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     res.status(500).send(err)
   }
 })
@@ -281,12 +286,12 @@ exp.post('/search', async (req, res) => {
     res.send(sqlResult.rows)
     client.end((err) => {
       if (err) {
-        console.error(err)
+        logger.error(err)
         res.status(500).send(err)
       }
     })
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     res.status(500).send(err)
   }
 })
@@ -313,7 +318,7 @@ exp.post('/delete', async (req, res) => {
     }
     res.send('deleted')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     res.status(500).send(err)
   }
 })
@@ -368,7 +373,7 @@ exp.post('/changekey', async (req, res) => {
       }
       client.end((err) => {
         if (err) {
-          console.error(err)
+          logger.error(err)
           res.status(500).send(err)
         }
       })
@@ -396,13 +401,13 @@ exp.post('/changekey', async (req, res) => {
     }
     client.end((err) => {
       if (err) {
-        console.error(err)
+        logger.error(err)
         res.status(500).send(err)
       }
     })
     res.send(`Secert Key Changed from ${oldKey} to ${newKey}`)
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     res.status(500).send(err)
   }
 })
@@ -429,7 +434,7 @@ exp.post('/changeremarks', async (req, res) => {
 
     res.send(`Remarks changed to ${newRemarks}.`)
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     res.status(500).send(err)
   }
 })
@@ -468,7 +473,7 @@ exp.post('/rename', async (req, res) => {
 
     res.send(`Filename changed to ${newFileName}.`)
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     res.status(500).send(err)
   }
 })
@@ -495,7 +500,7 @@ exp.post('/previewzip', async (req, res) => {
     res.status(200).send(zipEntries)
   }
   catch (err) {
-    console.error(err)
+    logger.error(err)
     res.status(500).send(err)
   }
 })
@@ -571,7 +576,7 @@ function downloadFileResumption(fileURL, fileSavePath, sseRes) {
     let tmpFileSavePath = fileSavePath + ".tmp"
     // 创建写入流
     const fileStream = fs.createWriteStream(tmpFileSavePath).on('error', function (e) {
-      console.error('error ==> ', e)
+      logger.error('error ==> ', e)
     }).on('ready', function () {
       // console.log("开始下载: ", fileURL)
     }).on('finish', function () {
@@ -653,13 +658,13 @@ async function deleteTempFiles() {
         // delete row
         deleteRowDB(element.FID)
 
-        // TODO: 可以写入 log
+        // 写入 log
+        logger.info(`删除临时文件 ${req.query.secretkey}/${req.query.filename}`)
       }
     })
   }
   catch (err) {
-    console.error(err)
-    // TODO: 可以写入 log
+    logger.error(err)
   }
 }
 
