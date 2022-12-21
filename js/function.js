@@ -322,7 +322,6 @@ function doPreviewZip(secretKey, fileName) {
   xhr.onreadystatechange = () => {
     if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
       let fileList = JSON.parse(xhr.response)
-      console.log(fileList)
       // 弹窗显示
       showPreviewZipModal(fileList)
     }

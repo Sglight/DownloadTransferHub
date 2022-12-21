@@ -256,11 +256,11 @@ function showPreviewZipModal(responseJSON) {
   modal.querySelector(".modal-content-title").innerHTML = "压缩文件预览"
   let modalContentText = modal.querySelector(".modal-content-text")
   modalContentText.innerHTML = `正在加载压缩文件...`
-  for (let index in responseJSON) {
+  for (let item of responseJSON) {
     // 按行显示
     text += `<div class="zip-row">
-      <span class="zip-row-name">${responseJSON[index].name}</span>
-      <span class="zip-row-desc">${responseJSON[index].desc}</span>
+      <span class="zip-row-name">${item.name}</span>
+      <span class="zip-row-desc">${item.desc}</span>
     </div>`
   }
   modalContentText.innerHTML = text

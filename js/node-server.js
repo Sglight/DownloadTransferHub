@@ -679,7 +679,7 @@ async function getZipFileContent(zipFilePath) {
   // console.log(`Entries read: ${entriesCount}`)
 
   const entries = await zip.entries()
-  let result = {}
+  let result = []
 
   let index = 0
   for (const entry of Object.values(entries)) {
