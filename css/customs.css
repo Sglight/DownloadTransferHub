@@ -300,10 +300,13 @@ td a {
   margin: auto;
   width: 800px;
   max-width: 75%;
+  max-height: 80%;
   -webkit-animation-name: animatemodal;
   -webkit-animation-duration: 0.4s;
   animation-name: animatemodal;
   animation-duration: 0.4s;
+  display: flex;
+  flex-direction: column;
 }
 
 .close-btn {
@@ -319,6 +322,12 @@ td a {
   color: darkgray;
 }
 
+.modal-content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .modal-content-title {
   font-size: 20px;
   font-weight: bold;
@@ -326,12 +335,22 @@ td a {
 }
 
 .modal-content-text {
-  margin: 15px 0;
+  overflow: auto;
 }
 
 .zip-row {
   display: flex;
   justify-content: space-between;
+}
+
+.zip-row-name, 
+.zip-row-desc {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.zip-row-name {
+  text-overflow: ellipsis;
 }
 
 @-webkit-keyframes animatemodal {

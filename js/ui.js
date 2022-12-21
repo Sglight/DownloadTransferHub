@@ -259,8 +259,8 @@ function showPreviewZipModal(responseJSON) {
   for (let index in responseJSON) {
     // 按行显示
     text += `<div class="zip-row">
-      <span class="zip-row-content">${responseJSON[index].name}</span>
-      <span class="zip-row-content">${responseJSON[index].desc}</span>
+      <span class="zip-row-name">${responseJSON[index].name}</span>
+      <span class="zip-row-desc">${responseJSON[index].desc}</span>
     </div>`
   }
   modalContentText.innerHTML = text
