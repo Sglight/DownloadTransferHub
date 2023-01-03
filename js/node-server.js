@@ -640,26 +640,25 @@ async function deleteTempFiles() {
     let SQLQuery = `SELECT "FID", "FileName", "SecretKey", "timestamp" FROM "UserFiles" WHERE "SecretKey"='tmp'`
     let sqlResult = await client.query(SQLQuery)
     let rows = sqlResult.rows
-    console.log(rows)
     rows.forEach(element => {
       // 删除 7 - 30 天之内的文件
       if (now - element.timestamp > sevenDay && now - element.timestamp < thirtyDay) {
         // delete file
-        let fileFullPath = `${WORKPATH}/UserFiles/${req.query.secretkey}/${req.query.filename}`
-        // 删除文件
+        let fileFullPath = `${WORKPATH}/UserFiles/${element.SecretKey}/${element.FileName}`
+        // 删除文件，无文件则不处理
         if (fs.existsSync(fileFullPath)) {
           fs.rmSync(fileFullPath)
         }
         // 如果文件夹为空，则删除文件夹
-        if (fs.readdirSync(`${WORKPATH}/UserFiles/${req.query.secretkey}`).length === 0) {
-          fs.rmdirSync(`${WORKPATH}/UserFiles/${req.query.secretkey}`)
+        if (fs.readdirSync(`${WORKPATH}/UserFiles/${element.SecretKey}`).length === 0) {
+          fs.rmdirSync(`${WORKPATH}/UserFiles/${element.SecretKey}`)
         }
 
         // delete row
         deleteRowDB(element.FID)
 
         // 写入 log
-        logger.info(`删除临时文件 ${req.query.secretkey}/${req.query.filename}`)
+        logger.info(`删除临时文件 ${element.SecretKey}/${element.FileName}`)
       }
     })
   }
@@ -672,6 +671,7 @@ async function deleteTempFiles() {
 schedule.scheduleJob('0 0 0 * * 0', () => {
   deleteTempFiles()
 })
+deleteTempFiles()
 
 // 获取压缩文件内容
 async function getZipFileContent(zipFilePath) {
