@@ -98,7 +98,7 @@ function createResultTable(table, responseJSON) {
 
   fillRowCell(
     fileNameCell,
-    `UserFiles/${responseJSON.SecretKey}/${responseJSON.FileName}`,
+    `UserFiles/${responseJSON.SecretKey}/${encodeURIComponent(responseJSON.FileName)}`,
     decodeURIComponent(responseJSON.FileName)
   )
   fillRowCell(hashCell, "", responseJSON.Hash)
