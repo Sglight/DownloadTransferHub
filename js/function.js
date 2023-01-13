@@ -278,7 +278,7 @@ function doPreview(FID, fileName, secretKey) {
   let url = row.childNodes[0].childNodes[0].href
 
   // 提取后缀名
-  let suffix = fileName.split(".").pop()
+  let suffix = fileName.split(".").pop().toLowerCase()
   if (isOffice(suffix)) {
     doPreviewOffice(url)
   } else if (suffix == "pdf") {

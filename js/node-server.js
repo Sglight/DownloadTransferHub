@@ -11,6 +11,8 @@ import fetch from "node-fetch"
 import progressStream from 'progress-stream'
 import schedule from 'node-schedule'
 import streamZip from 'node-stream-zip'
+import sevenZip from 'node-7z'
+import sevenBin from '7zip-bin'
 
 import express from 'express'
 import multer from 'multer'
@@ -671,29 +673,47 @@ async function deleteTempFiles() {
 schedule.scheduleJob('0 0 0 * * 0', () => {
   deleteTempFiles()
 })
-deleteTempFiles()
 
 // 获取压缩文件内容
 async function getZipFileContent(zipFilePath) {
-  const zip = new streamZip.async({ file: zipFilePath })
-  // console.log(`Entries read: ${entriesCount}`)
-
-  const entries = await zip.entries()
+  const suffix = zipFilePath.split(".").pop().toLowerCase()
   let result = []
+  if (suffix == "zip") {
+    const zip = new streamZip.async({ file: zipFilePath })
+    const entries = await zip.entries()
 
-  let index = 0
-  for (const entry of Object.values(entries)) {
-    let obj = {}
-    const desc = entry.isDirectory ? 'directory' : `${formatBytes(entry.size)}`
-    obj.name = entry.name
-    obj.desc = desc
-    // console.log(`Entry ${entry.name}: ${desc}`)
-    result[index] = obj
-    index++
+    for (const entry of Object.values(entries)) {
+      let obj = {}
+      const desc = entry.isDirectory ? 'directory' : `${formatBytes(entry.size)}`
+      obj.name = entry.name
+      obj.desc = desc
+      // console.log(`Entry ${entry.name}: ${desc}`)
+      result.push(obj)
+    }
+
+    // Do not forget to close the file once you're done
+    await zip.close()
+  } else if (suffix == "7z") {
+    await new Promise((resolve, reject) => {
+      const pathTo7zip = sevenBin.path7za
+      const zip = sevenZip.list(zipFilePath, { $bin: pathTo7zip })
+      zip.on('data', function (entry) {
+        let obj = {}
+        const desc = entry.attributes === 'D....' ? 'directory' : `${formatBytes(entry.size)}`
+        obj.name = entry.file
+        obj.desc = desc
+        // console.log(`Entry ${entry.file}: ${desc}`)
+        result.push(obj)
+      })
+      .on('end', function () {
+        console.log(result)
+        resolve()
+      })
+    })
+  } else if (suffix == "rar") {
+    // TODO
   }
-
-  // Do not forget to close the file once you're done
-  await zip.close()
+  
   return result
 }
 
