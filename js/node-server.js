@@ -9,6 +9,10 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import fetch from "node-fetch"
 import progressStream from 'progress-stream'
+import schedule from 'node-schedule'
+import streamZip from 'node-stream-zip'
+import sevenZip from 'node-7z'
+import sevenBin from '7zip-bin'
 
 import express from 'express'
 import multer from 'multer'
@@ -19,6 +23,11 @@ import md5File from 'md5-file'
 const DOMAIN = ['https://soar.l4d2lk.cn', 'https://soar.hykq.cc', 'http://127.0.0.1:3000']
 const WORKPATH = path.resolve(fileURLToPath(import.meta.url), '../..')
 const upload = multer({ dest: `${WORKPATH}/UserFiles/tmp/` }) // 上传的临时文件目录
+
+// 保存日志到文件
+checkFloderExists(`${WORKPATH}/logs`)
+const LOGFILE = fs.createWriteStream(`${WORKPATH}/logs/node-server.log`, { flags: 'a', encoding: 'utf8', })
+let logger = new console.Console(LOGFILE)
 
 const pgConfig = {
   host: process.env.hksrvip,
@@ -36,7 +45,7 @@ exp.post('/parse', async (req, res) => {
   if (DOMAIN.includes(req.headers.origin)) {
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
   }
-  
+
   try {
     let inputFileLink = req.query.inputfile
     let inputFileName = inputFileLink.substring(
@@ -72,19 +81,18 @@ exp.post('/parse', async (req, res) => {
             VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}', '${inputFileLink}', '${ip}', '${ua}') 
             RETURNING "FID"
         `
-    const client = new pg.Client(pgConfig)
-    client.connect((err) => {
-      if (err) {
-        console.error(err)
-        res.status(500).send(err)
-      }
-    })
+
+    const client = await connectPG()
+    if (client === null) {
+      res.status(500).send('Connect PG Error')
+      return
+    }
 
     let sqlResult = await client.query(SQLQuery)
     let FID = sqlResult.rows[0].FID
     client.end((err) => {
       if (err) {
-        console.error(err)
+        logger.error(err)
         res.status(500).send(err)
       }
     })
@@ -98,7 +106,7 @@ exp.post('/parse', async (req, res) => {
     })
     res.send(resData)
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     res.status(500).send(err)
   }
 })
@@ -146,19 +154,18 @@ exp.get('/parsesse', async (req, res) => {
             VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}', '${inputFileLink}', '${ip}', '${ua}') 
             RETURNING "FID"
         `
-    const client = new pg.Client(pgConfig)
-    client.connect((err) => {
-      if (err) {
-        console.error(err)
-        res.status(500).send('数据库连接失败，请联系网站管理员处理')
-      }
-    })
+
+    const client = await connectPG()
+    if (client === null) {
+      res.status(500).send('Connect PG Error')
+      return
+    }
 
     let sqlResult = await client.query(SQLQuery)
     let FID = sqlResult.rows[0].FID
     client.end((err) => {
       if (err) {
-        console.error(err)
+        logger.error(err)
         res.status(500).send('数据库操作失败，请联系网站管理员处理')
       }
     })
@@ -174,7 +181,7 @@ exp.get('/parsesse', async (req, res) => {
     res.write(`data: ${resData}\n\n`)
     res.end()
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     res.status(500).send('发生神秘错误')
   }
 })
@@ -202,32 +209,46 @@ exp.post('/upload', upload.single('file'), async (req, res, next) => {
     // 检查是否已存在相同文件
     let alterFileName = await renameFile(fileName, fileFloder, fileFullPath)
     fileFullPath = `${fileFloder}/${alterFileName}`
-    fs.rename(tmpPath, fileFullPath, (err) => {
-      if (err) {
-        console.log(err)
-      }
-    })
 
-    let hash = await md5File(decodeURIComponent(fileFullPath))
+    // 检查临时文件 MD5 是否重复
+    let hash = await md5File(decodeURIComponent(tmpPath))
+    let duplicate = await checkDuplicate(hash)
+    if (duplicate) { // 有重复文件，直接硬链接，删除临时文件，实际上检查应该是前端完成？
+      console.log('Duplicate File')
+      console.log(duplicate)
+      let secretKey = duplicate[0][0]
+      let fileName = duplicate[0][1]
+      let originFullPath = `${UserFileFloder}/${secretKey}/${fileName}`
 
+      fs.linkSync(originFullPath, fileFullPath)
+      fs.rmSync(tmpPath)
+
+      console.log(originFullPath)
+      console.log(fileFullPath)
+    } else { // 无重复文件，移动临时文件到目标文件夹
+      fs.renameSync(tmpPath, fileFullPath, (err) => {
+        if (err) {
+          logger.error(err)
+        }
+      })
+    }
     let SQLQuery = `
             INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks", "originlink", "ip", "ua") 
-            VALUES('${fileName}', '${hash}', '${secretKey}', '${remarks}', 'UPLOAD', '${ip}', '${ua}') 
+            VALUES('${alterFileName}', '${hash}', '${secretKey}', '${remarks}', 'UPLOAD', '${ip}', '${ua}') 
             RETURNING "FID"
         `
-    const client = new pg.Client(pgConfig)
-    client.connect((err) => {
-      if (err) {
-        console.error(err)
-        res.status(500).send(err)
-      }
-    })
+
+    const client = await connectPG()
+    if (client === null) {
+      res.status(500).send('Connect PG Error')
+      return
+    }
 
     let sqlResult = await client.query(SQLQuery)
     let FID = sqlResult.rows[0].FID
     client.end((err) => {
       if (err) {
-        console.error(err)
+        logger.error(err)
         res.status(500).send(err)
       }
     })
@@ -242,7 +263,7 @@ exp.post('/upload', upload.single('file'), async (req, res, next) => {
     console.log(`文件已上传：${fileFullPath}`)
     res.send(resData)
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     res.status(500).send(err)
   }
 })
@@ -257,25 +278,22 @@ exp.post('/search', async (req, res) => {
             FROM "UserFiles" WHERE "SecretKey" = '${req.query.secretkey}' ORDER BY "FID" ASC
         `
 
-    const client = new pg.Client(pgConfig)
-
-    client.connect((err) => {
-      if (err) {
-        console.error(err)
-        res.status(500).send(err)
-      }
-    })
+    const client = await connectPG()
+    if (client === null) {
+      res.status(500).send('Connect PG Error')
+      return
+    }
 
     let sqlResult = await client.query(SQLQuery)
     res.send(sqlResult.rows)
     client.end((err) => {
       if (err) {
-        console.error(err)
+        logger.error(err)
         res.status(500).send(err)
       }
     })
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     res.status(500).send(err)
   }
 })
@@ -296,9 +314,13 @@ exp.post('/delete', async (req, res) => {
     if (fs.existsSync(fileFullPath)) {
       fs.rmSync(fileFullPath)
     }
+    // 如果文件夹为空，则删除文件夹
+    if (fs.readdirSync(`${WORKPATH}/UserFiles/${req.query.secretkey}`).length === 0) {
+      fs.rmdirSync(`${WORKPATH}/UserFiles/${req.query.secretkey}`)
+    }
     res.send('deleted')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     res.status(500).send(err)
   }
 })
@@ -328,14 +350,11 @@ exp.post('/changekey', async (req, res) => {
       let SQLQuery = `SELECT "Hash" FROM "UserFiles" 
             WHERE ("SecretKey"='${newKey}' AND "FileName"='${fileName}') OR ("FID"='${FID}')`
 
-      const client = new pg.Client(pgConfig)
-
-      client.connect((err) => {
-        if (err) {
-          console.error(err)
-          res.status(500).send(err)
-        }
-      })
+      const client = await connectPG()
+      if (client === null) {
+        res.status(500).send('Connect PG Error')
+        return
+      }
 
       let sqlResult = await client.query(SQLQuery)
       let hash1 = sqlResult.rows[0].Hash
@@ -356,7 +375,7 @@ exp.post('/changekey', async (req, res) => {
       }
       client.end((err) => {
         if (err) {
-          console.error(err)
+          logger.error(err)
           res.status(500).send(err)
         }
       })
@@ -371,14 +390,12 @@ exp.post('/changekey', async (req, res) => {
     let ADDQUERY = `INSERT INTO "UserFiles"("FileName", "Hash", "SecretKey", "remarks") 
         SELECT "FileName", "Hash", '${newKey}', "remarks" FROM "UserFiles" WHERE "FID"='${FID}'`
 
-    const client = new pg.Client(pgConfig)
+    const client = await connectPG()
+    if (client === null) {
+      res.status(500).send('Connect PG Error')
+      return
+    }
 
-    client.connect((err) => {
-      if (err) {
-        console.error(err)
-        res.status(500).send(err)
-      }
-    })
     if (mode == 'change' && !bExisted) {
       await client.query(CHANGEQUERY)
     } else if (mode == 'add' && !bExisted) {
@@ -386,13 +403,13 @@ exp.post('/changekey', async (req, res) => {
     }
     client.end((err) => {
       if (err) {
-        console.error(err)
+        logger.error(err)
         res.status(500).send(err)
       }
     })
     res.send(`Secert Key Changed from ${oldKey} to ${newKey}`)
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     res.status(500).send(err)
   }
 })
@@ -406,11 +423,12 @@ exp.post('/changeremarks', async (req, res) => {
     let newRemarks = req.query.newremarks
     let SQLQuery = `UPDATE "UserFiles" SET "remarks"='${newRemarks}' WHERE "FID"='${req.query.FID}'`
 
-    const client = new pg.Client(pgConfig)
+    const client = await connectPG()
+    if (client === null) {
+      res.status(500).send('Connect PG Error')
+      return
+    }
 
-    client.connect((err) => {
-      if (err) console.log(err)
-    })
     await client.query(SQLQuery)
     client.end((err) => {
       if (err) console.log(err)
@@ -418,7 +436,46 @@ exp.post('/changeremarks', async (req, res) => {
 
     res.send(`Remarks changed to ${newRemarks}.`)
   } catch (err) {
-    console.error(err)
+    logger.error(err)
+    res.status(500).send(err)
+  }
+})
+
+exp.post('/rename', async (req, res) => {
+  try {
+    if (DOMAIN.includes(req.headers.origin)) {
+      res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
+    }
+
+    let oldFileName = req.query.oldfilename
+    let newFileName = req.query.newfilename
+    let secretKey = req.query.secretkey
+    let fileFloder = `${WORKPATH}/UserFiles/${secretKey}/`
+    let oldFileFullPath = `${fileFloder}/${oldFileName}`
+    let newFileFullPath = `${fileFloder}/${newFileName}`
+
+    // 检查新名称是否重复
+    newFileName = await renameFile(newFileName, fileFloder, newFileFullPath)
+
+    // 重命名文件
+    fs.renameSync(oldFileFullPath, newFileFullPath)
+
+    let SQLQuery = `UPDATE "UserFiles" SET "FileName"='${newFileName}' WHERE "FID"='${req.query.FID}'`
+
+    const client = await connectPG()
+    if (client === null) {
+      res.status(500).send('Connect PG Error')
+      return
+    }
+
+    await client.query(SQLQuery)
+    client.end((err) => {
+      if (err) console.log(err)
+    })
+
+    res.send(`Filename changed to ${newFileName}.`)
+  } catch (err) {
+    logger.error(err)
     res.status(500).send(err)
   }
 })
@@ -431,15 +488,33 @@ exp.options('/upload', async (req, res) => {
   res.status(200).send()
 })
 
+exp.post('/previewzip', async (req, res) => {
+  try {
+    if (DOMAIN.includes(req.headers.origin)) {
+      res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
+    }
+
+    let secretKey = req.query.secretkey
+    let fileName = req.query.filename
+    let zipFilePath = `${WORKPATH}/UserFiles/${secretKey}/${fileName}`
+    let zipEntries = await getZipFileContent(zipFilePath)
+
+    res.status(200).send(zipEntries)
+  }
+  catch (err) {
+    logger.error(err)
+    res.status(500).send(err)
+  }
+})
+
 async function deleteRowDB(FID) {
   let SQLQuery = `DELETE FROM "UserFiles" WHERE "FID"='${FID}'`
 
-  const client = new pg.Client(pgConfig)
-  // 数据库连接失败
-  client.connect((err) => {
-    if (err) console.log(err)
-    return false
-  })
+  const client = await connectPG()
+  if (client === null) {
+    res.status(500).send('Connect PG Error')
+    return
+  }
 
   await client.query(SQLQuery)
   client.end((err) => {
@@ -462,9 +537,34 @@ async function renameFile(fileName, fileFloder, fileFullPath) {
   return alterFileName
 }
 
-// TODO: 检查 MD5
-async function checkDuplicateMD5(md5) { }
+// 检查 MD5
+// 有重复则返回 [secretKey, fileName]，能定位到源文件
+// 没有重复则返回 null
+async function checkDuplicate(md5) {
+  let SQLQuery = `SELECT "FID", "FileName", "SecretKey" FROM "UserFiles" WHERE "Hash"='${md5}' order by "FID" asc`
 
+  const client = await connectPG()
+  if (client === null) {
+    res.status(500).send('Connect PG Error')
+    return
+  }
+  let sqlResult = await client.query(SQLQuery)
+
+  let array = []
+
+  if (sqlResult.rowCount === 0) { // 无重复，返回 null
+    return null
+  } else { // 有重复，遍历所有行，返回二维数组
+    for (let i = 0; i < sqlResult.rowCount; i++) {
+      let fileName = sqlResult.rows[i].FileName
+      let secretKey = sqlResult.rows[i].SecretKey
+      array.push([secretKey, fileName])
+    }
+    return array
+  }
+}
+
+// 检查文件夹是否存在，不存在则创建
 async function checkFloderExists(floder) {
   if (!fs.existsSync(floder)) {
     fs.mkdirSync(floder)
@@ -478,7 +578,7 @@ function downloadFileResumption(fileURL, fileSavePath, sseRes) {
     let tmpFileSavePath = fileSavePath + ".tmp"
     // 创建写入流
     const fileStream = fs.createWriteStream(tmpFileSavePath).on('error', function (e) {
-      console.error('error ==> ', e)
+      logger.error('error ==> ', e)
     }).on('ready', function () {
       // console.log("开始下载: ", fileURL)
     }).on('finish', function () {
@@ -514,6 +614,120 @@ function downloadFileResumption(fileURL, fileSavePath, sseRes) {
       reject(e)
     })
   })
+}
+
+// 连接数据库
+async function connectPG() {
+  const client = new pg.Client(pgConfig)
+  // 数据库连接失败
+  client.connect((err) => {
+    if (err) console.log(err)
+    return null
+  })
+  return client
+}
+
+// 定期删除超时临时文件
+async function deleteTempFiles() {
+  try {
+    const client = await connectPG()
+    if (client === null) {
+      return
+    }
+
+    let now = new Date().getTime()
+    const sevenDay = 1000 * 60 * 60 * 24 * 7
+    const thirtyDay = 1000 * 60 * 60 * 24 * 30
+
+    let SQLQuery = `SELECT "FID", "FileName", "SecretKey", "timestamp" FROM "UserFiles" WHERE "SecretKey"='tmp'`
+    let sqlResult = await client.query(SQLQuery)
+    let rows = sqlResult.rows
+    rows.forEach(element => {
+      // 删除 7 - 30 天之内的文件
+      if (now - element.timestamp > sevenDay && now - element.timestamp < thirtyDay) {
+        // delete file
+        let fileFullPath = `${WORKPATH}/UserFiles/${element.SecretKey}/${element.FileName}`
+        // 删除文件，无文件则不处理
+        if (fs.existsSync(fileFullPath)) {
+          fs.rmSync(fileFullPath)
+        }
+        // 如果文件夹为空，则删除文件夹
+        if (fs.readdirSync(`${WORKPATH}/UserFiles/${element.SecretKey}`).length === 0) {
+          fs.rmdirSync(`${WORKPATH}/UserFiles/${element.SecretKey}`)
+        }
+
+        // delete row
+        deleteRowDB(element.FID)
+
+        // 写入 log
+        logger.info(`删除临时文件 ${element.SecretKey}/${element.FileName}`)
+      }
+    })
+  }
+  catch (err) {
+    logger.error(err)
+  }
+}
+
+// 每周日凌晨 0 点执行
+schedule.scheduleJob('0 0 0 * * 0', () => {
+  deleteTempFiles()
+})
+
+// 获取压缩文件内容
+async function getZipFileContent(zipFilePath) {
+  const suffix = zipFilePath.split(".").pop().toLowerCase()
+  let result = []
+  if (suffix == "zip") {
+    const zip = new streamZip.async({ file: zipFilePath })
+    const entries = await zip.entries()
+
+    for (const entry of Object.values(entries)) {
+      let obj = {}
+      const desc = entry.isDirectory ? 'directory' : `${formatBytes(entry.size)}`
+      obj.name = entry.name
+      obj.desc = desc
+      // console.log(`Entry ${entry.name}: ${desc}`)
+      result.push(obj)
+    }
+
+    // Do not forget to close the file once you're done
+    await zip.close()
+  } else if (suffix == "7z") {
+    await new Promise((resolve, reject) => {
+      const pathTo7zip = sevenBin.path7za
+      const zip = sevenZip.list(zipFilePath, { $bin: pathTo7zip })
+      zip.on('data', function (entry) {
+        let obj = {}
+        const desc = entry.attributes === 'D....' ? 'directory' : `${formatBytes(entry.size)}`
+        obj.name = entry.file
+        obj.desc = desc
+        // console.log(`Entry ${entry.file}: ${desc}`)
+        result.push(obj)
+      })
+      .on('end', function () {
+        console.log(result)
+        resolve()
+      })
+    })
+  } else if (suffix == "rar") {
+    // TODO
+  }
+  
+  return result
+}
+
+// 存储单位转换
+function formatBytes(bytes, decimals = 2) {
+  if (bytes === 0) return '0 Bytes'
+
+  const k = 1024
+  const dm = decimals < 0 ? 0 : decimals
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
 }
 
 exp.listen(8001, () => {

@@ -1,5 +1,5 @@
 "use strict"
-const DOMAIN = ['https://soar.l4d2lk.cn', 'https://soar.hykq.cc']
+const DOMAIN = ['https://soar.hykq.cc']
 const ORIGIN = document.location.origin
 const HOSTNAME = document.location.hostname
 const LOCALNODE = 'http://127.0.0.1:8001'
@@ -229,6 +229,31 @@ function doChangeRemarks(FID) {
   }
 }
 
+function doRename(FID, fileName, secretKey) {
+  let row = document.getElementById(`fid-${FID}`)
+  let newFileName = prompt("请输入新文件名", row.childNodes[0].childNodes[0].text)
+  if (newFileName === null) return
+
+  let newHref = `UserFiles/${secretKey}/${newFileName}`
+
+  let xhr = new XMLHttpRequest()
+  let requestUrl
+  if (DOMAIN.includes(ORIGIN)) {
+    requestUrl = `${ORIGIN}/rename?FID=${FID}&newfilename=${newFileName}&oldfilename=${fileName}&secretkey=${secretKey}`
+  } else if (HOSTNAME == '127.0.0.1') {
+    requestUrl = `${LOCALNODE}/rename?FID=${FID}&newfilename=${newFileName}&oldfilename=${fileName}&secretkey=${secretKey}`
+  }
+  xhr.open("POST", requestUrl)
+  xhr.send()
+
+  xhr.onreadystatechange = () => {
+    if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
+      row.childNodes[0].childNodes[0].text = newFileName
+      row.childNodes[0].childNodes[0].href = newHref
+    }
+  }
+}
+
 function doTrident() {
   let mode = document.getElementById("mode").getAttribute("value")
   switch (mode) {
@@ -246,4 +271,64 @@ function doTrident() {
 
 function disableElement(id, boolean) {
   document.getElementById(id).disabled = boolean
+}
+
+function doPreview(FID, fileName, secretKey) {
+  let row = document.getElementById(`fid-${FID}`)
+  let url = row.childNodes[0].childNodes[0].href
+
+  // 提取后缀名
+  let suffix = fileName.split(".").pop().toLowerCase()
+  if (isOffice(suffix)) {
+    doPreviewOffice(url)
+  } else if (suffix == "pdf") {
+    doPreviewPDF(secretKey, fileName)
+  } else if (isZip(suffix)) {
+    doPreviewZip(secretKey, fileName)
+  }
+}
+
+// office 文件预览，使用 Office Web Viewer
+function doPreviewOffice(url) {
+  // http://view.officeapps.live.com/op/view.aspx?src=
+  window.open(`https://view.officeapps.live.com/op/view.aspx?src=${url}`)
+}
+
+function isOffice(suffix) {
+  let office = ["doc", "docx", "xls", "xlsx", "ppt", "pptx"]
+  return office.includes(suffix)
+}
+
+// pdf 文件预览，使用 pdf.js
+function doPreviewPDF(secretKey, fileName) {
+  // nginx location /pdfviewer { alias PROJECT_PATH/js/pdfjs/ }
+  // /pdfviewer/web/viewer.html?file=../../../UserFiles//${secretKey}/${fileName}
+  window.open(`/pdfviewer/web/viewer.html?file=../../../UserFiles//${secretKey}/${fileName}`)
+}
+
+// 压缩文件预览
+function doPreviewZip(secretKey, fileName) {
+  // 请求后端，获取压缩文件的文件列表
+  let xhr = new XMLHttpRequest()
+  let requestUrl
+  if (DOMAIN.includes(ORIGIN)) {
+    requestUrl = `${ORIGIN}/previewzip?secretkey=${secretKey}&filename=${fileName}`
+  } else if (HOSTNAME == '127.0.0.1') {
+    requestUrl = `${LOCALNODE}/previewzip?secretkey=${secretKey}&filename=${fileName}`
+  }
+  xhr.open("POST", requestUrl)
+  xhr.send()
+
+  xhr.onreadystatechange = () => {
+    if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
+      let fileList = JSON.parse(xhr.response)
+      // 弹窗显示
+      showPreviewZipModal(fileList)
+    }
+  }
+}
+
+function isZip(suffix) {
+  let zip = ["zip", "rar", "7z"]
+  return zip.includes(suffix)
 }
